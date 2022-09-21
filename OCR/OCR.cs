@@ -1,7 +1,7 @@
 ﻿using Patagames.Ocr;
 using Patagames.Ocr.Enums;
 
-namespace Masterduel_TLDR_overlay.OCR
+namespace Masterduel_TLDR_overlay.Ocr
 {
     internal class OCR
     {

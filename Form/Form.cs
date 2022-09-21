@@ -1,3 +1,4 @@
+using Masterduel_TLDR_overlay.Ocr;
 using System.Windows.Forms;
 
 namespace Masterduel_TLDR_overlay
