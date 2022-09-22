@@ -1,3 +1,5 @@
+using System;
+
 namespace Masterduel_TLDR_overlay
 {
     internal static class Program

@@ -12,12 +12,18 @@ namespace Masterduel_TLDR_overlay.Ocr
             api = OcrApi.Create();
             api.Init(Languages.English);
         }
-        public ImageAnalysis ReadImage(string imagePath)
+        public ImageAnalysis ReadImage(Bitmap bm)
         {
-            string plainText = api.GetTextFromImage(imagePath);
-
+            string plainText;
             ImageAnalysis ret = new ImageAnalysis();
-            ret.Text = plainText;
+
+            try
+            {
+              plainText = api.GetTextFromImage(bm);
+                ret.Text = plainText;
+            } catch (Exception)
+            {
+            }
 
             return ret;
         }

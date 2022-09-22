@@ -40,7 +40,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(446, 9);
+            this.label1.Location = new System.Drawing.Point(580, 9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(74, 15);
             this.label1.TabIndex = 1;
@@ -49,7 +49,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(149, 91);
+            this.button1.Location = new System.Drawing.Point(243, 91);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 2;
@@ -59,50 +59,50 @@
             // 
             // ImagePath
             // 
-            this.ImagePath.Location = new System.Drawing.Point(62, 120);
+            this.ImagePath.Location = new System.Drawing.Point(18, 120);
             this.ImagePath.Name = "ImagePath";
-            this.ImagePath.Size = new System.Drawing.Size(255, 23);
+            this.ImagePath.Size = new System.Drawing.Size(536, 23);
             this.ImagePath.TabIndex = 4;
             this.ImagePath.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // endText
             // 
-            this.endText.Location = new System.Drawing.Point(629, 120);
+            this.endText.Location = new System.Drawing.Point(691, 149);
             this.endText.Multiline = true;
             this.endText.Name = "endText";
-            this.endText.Size = new System.Drawing.Size(304, 252);
+            this.endText.Size = new System.Drawing.Size(363, 336);
             this.endText.TabIndex = 5;
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(743, 91);
+            this.button2.Location = new System.Drawing.Point(832, 91);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 6;
-            this.button2.Text = "Extract";
+            this.button2.Text = "Analyse Image";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.convert_to_text_click);
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(62, 160);
+            this.pictureBox1.Location = new System.Drawing.Point(18, 149);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(255, 212);
+            this.pictureBox1.Size = new System.Drawing.Size(536, 422);
             this.pictureBox1.TabIndex = 7;
             this.pictureBox1.TabStop = false;
             // 
-            // Form1
+            // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1023, 514);
+            this.ClientSize = new System.Drawing.Size(1134, 583);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.endText);
             this.Controls.Add(this.ImagePath);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label1);
-            this.Name = "Form1";
+            this.Name = "Form";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
