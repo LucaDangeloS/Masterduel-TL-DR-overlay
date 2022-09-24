@@ -25,5 +25,6 @@ namespace Masterduel_TLDR_overlay.Screen
 
             return bm;
         }
+
     }
 }
