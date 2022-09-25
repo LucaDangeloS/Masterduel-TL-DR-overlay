@@ -1,5 +1,7 @@
+using Masterduel_TLDR_overlay.Api;
 using Masterduel_TLDR_overlay.Ocr;
 using Masterduel_TLDR_overlay.Screen;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Windows.Forms;
@@ -28,7 +30,6 @@ namespace Masterduel_TLDR_overlay
                 // display image in picture box  
                 pictureBox1.Image = new Bitmap(open.FileName);
                 // image file path  
-                ImagePath.Text = open.FileName;
             }
         }
 
@@ -37,8 +38,8 @@ namespace Masterduel_TLDR_overlay
 
         }
 
-        private void convert_to_text_click(object sender, EventArgs e) {
-        
+        private async void convert_to_text_clickAsync(object sender, EventArgs e) {
+
             var handler = new Windows.Handler();
             var wl = handler.GetWindowPoints(Masterduel.WINDOW_NAME);
             var newPoints = Masterduel.Window.GetCardTitleCoords(wl);
@@ -49,7 +50,20 @@ namespace Masterduel_TLDR_overlay
 
             OCR ocr = new();
             var Result = ocr.ReadImage(bm);
-            endText.Text = Result.Text;
+            var reformattedCardName = TextProcessing.CardText.TrimCardName(Result.Text, TextProcessing.CardText.Trim_aggressiveness.Aggresive);
+            endText.Text = "Original: " + Result.Text + "\r\n" + reformattedCardName;
+            try
+            {
+                List<CardInfo> apiRes = await CardsAPI.GetCardByNameAsync(reformattedCardName);
+                endText.Text = endText.Text + "\r\n\r\n" + string.Join("\r\n\r\n", apiRes);
+            } catch (HttpRequestException excp)
+            {
+                Debug.WriteLine(excp.Message);
+            } catch (NoCardsFoundException excp)
+            {
+                Debug.WriteLine(excp.Message);
+            }
+
         }
     }
 }

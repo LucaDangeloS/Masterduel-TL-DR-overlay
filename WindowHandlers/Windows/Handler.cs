@@ -34,7 +34,7 @@ namespace Masterduel_TLDR_overlay.Windows
                     break;
                 }
             }
-            if (hWnd == IntPtr.Zero) throw new NoWindowFound("No window with name " + windowName + " found.");
+            if (hWnd == IntPtr.Zero) throw new NoWindowFoundException("No window with name " + windowName + " found.");
             return hWnd;
         }
 
@@ -48,7 +48,7 @@ namespace Masterduel_TLDR_overlay.Windows
             Boundaries b = new Boundaries();
             IntPtr hWnd = GetWinHandle(windowName);
             var res = GetWindowBoundaries(hWnd, ref b);
-            if (!res) throw new NoDimensionsFound();
+            if (!res) throw new NoDimensionsFoundException();
 
             return (new Point(b.Left, b.Top), new Point(b.Right, b.Bottom));
         }
