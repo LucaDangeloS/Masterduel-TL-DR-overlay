@@ -24,7 +24,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             string str = sb.ToString();
             int len = str.Length;
 
-            if (len <= 8)
+            if (len <= 14)
             {
                 var new_agr_int = agr_int / 2;
                 if (aggressiveness <= Trim_aggressiveness.Light || len <= new_agr_int * 4) { return str; }
@@ -37,7 +37,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
         {
             None,
             Light,
-            Moderade,
+            Moderate,
             Aggresive
         }
 

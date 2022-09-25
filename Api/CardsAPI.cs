@@ -28,15 +28,23 @@ namespace Masterduel_TLDR_overlay.Api
         /// <returns>Returns a <see cref="Task"/> object with a <see cref="CardInfo"/> <see cref="List"/> for the cards found by the search.</returns>
         public static async Task<List<CardInfo>> GetCardByNameAsync(string cardName)
         {
-            string path = BASE_URL + "/?fname=" +  cardName;
-            HttpResponseMessage response = await client.GetAsync(path);
+            string fuzzyPath = BASE_URL + "/?fname=" +  cardName;
+            HttpResponseMessage response = await client.GetAsync(fuzzyPath);
             response.EnsureSuccessStatusCode();
             JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
             if (res == null) throw new NoCardsFoundException("No cards were found with name: " + cardName);
             return res.Data;
         }
 
-
+        public static async Task<List<CardInfo>> GetCardByExactNameAsync(string cardName)
+        {
+            string exactPath = BASE_URL + "/?name=" + cardName;
+            HttpResponseMessage response = await client.GetAsync(exactPath);
+            response.EnsureSuccessStatusCode();
+            JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
+            if (res == null) throw new NoCardsFoundException("No cards were found with name: " + cardName);
+            return res.Data;
+        }
     }
 
     public class CardInfo

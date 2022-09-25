@@ -39,35 +39,42 @@ namespace Masterduel_TLDR_overlay
 
             var handler = new Windows.Handler();
             var wl = handler.GetWindowPoints(Masterduel.WINDOW_NAME);
-            var newPoints = Masterduel.Window.GetCardSplashCoords(wl);
+            var newPoints = Masterduel.Window.GetCardTitleCoords(wl);
 
             Bitmap bm = ScreenProcessing.TakeScreenshotFromArea(newPoints.Item1, newPoints.Item2);
             pictureBox1.Image = bm;
 
-            if (pictureBox1.Image != null)
-            {
-                try
-                {
-                    // REPLACE
-                    Bitmap bm2 = new Bitmap(@"temp.jpg");
-                    float comp = ScreenProcessing.CompareImages(bm, bm2);
-                    Debug.WriteLine(comp);
-                    bm2.Dispose();
-                } catch (Exception excp)
-                {
-                    Debug.WriteLine(excp);
-                }
-            }
-            // REPLACE
-            bm.Save(@"temp.jpg");
+            //if (pictureBox1.Image != null)
+            //{
+            //    try
+            //    {
+            //        // REPLACE
+            //        Bitmap bm2 = new Bitmap(@"temp.jpg");
+            //        float comp = ScreenProcessing.CompareImages(bm, bm2);
+            //        Debug.WriteLine(comp);
+            //        bm2.Dispose();
+            //    } catch (Exception excp)
+            //    {
+            //        Debug.WriteLine(excp);
+            //    }
+            //}
+            //// REPLACE
+            //bm.Save(@"temp.jpg");
 
             OCR ocr = new();
             var Result = ocr.ReadImage(bm);
-            var reformattedCardName = TextProcessing.CardText.TrimCardName(Result.Text, TextProcessing.CardText.Trim_aggressiveness.Aggresive);
+            var reformattedCardName = TextProcessing.CardText.TrimCardName(Result.Text, TextProcessing.CardText.Trim_aggressiveness.Light);
             endText.Text = "Original: " + Result.Text + "\r\n" + reformattedCardName;
             try
             {
-                List<CardInfo> apiRes = await CardsAPI.GetCardByNameAsync(reformattedCardName);
+                List<CardInfo> apiRes;
+                if (reformattedCardName.Length > 10)
+                {
+                    apiRes = await CardsAPI.GetCardByNameAsync(reformattedCardName);
+                } else
+                {
+                    apiRes = await CardsAPI.GetCardByExactNameAsync(reformattedCardName);
+                }
                 endText.Text = endText.Text + "\r\n\r\n" + string.Join("\r\n\r\n", apiRes);
             } catch (HttpRequestException excp)
             {
