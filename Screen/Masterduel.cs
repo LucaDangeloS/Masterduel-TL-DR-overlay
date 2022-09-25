@@ -18,12 +18,19 @@ namespace Masterduel_TLDR_overlay.Screen
 
         // 16 * 39 offset for borders
         public static class Window {
-            protected static class RelPos
+            protected static class TextRelPos
             {
                 public static float X_REL_INIT_POS = 0.0191f;
                 public static float Y_REL_INIT_POS = 0.14f;
                 public static float X_REL_END_POS = 0.19f;
                 public static float Y_REL_END_POS = 0.18f;
+            };
+            protected static class SplashRelPos
+            {
+                public static float X_REL_INIT_POS = 0.030f;
+                public static float Y_REL_INIT_POS = 0.245f;
+                public static float X_REL_END_POS = 0.0922f;
+                public static float Y_REL_END_POS = 0.3546f;
             };
             private static bool IsWindowed(Size size)
             {
@@ -49,10 +56,35 @@ namespace Masterduel_TLDR_overlay.Screen
                     wp.Item1.Y += HEIGHT_BORDER_OFFSET - WIDTH_BORDER_OFFSET / 2;
                 }
 
-                var newPoints = (new Point((int)(RelPos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
-                                           (int)(RelPos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
-                                 new Point((int) (RelPos.X_REL_END_POS * size.Width) + wp.Item1.X,
-                                           (int)(RelPos.Y_REL_END_POS * size.Height) + wp.Item1.Y));
+                var newPoints = (new Point((int)(TextRelPos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
+                                           (int)(TextRelPos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
+                                 new Point((int)(TextRelPos.X_REL_END_POS * size.Width) + wp.Item1.X,
+                                           (int)(TextRelPos.Y_REL_END_POS * size.Height) + wp.Item1.Y));
+                return newPoints;
+            }
+
+            /// <summary>
+            /// Returns the coordinates where the currently selected card splash art is located at the screen in "masterduel".
+            /// <code></code>The coordinates take into acount the window size, resolution and the window mode.
+            /// </summary>
+            /// <param name="wp">The window points coordinates. In the format <code>(Point(x1, y1), Point(x2, y2))</code> being (x1, y1) the upper-left corner 
+            /// and (x2, y2) the lower-right corner.</param>
+            /// <returns>Returns absolute the set  of points coordinates that delimit the rectangle where the name of the currently selected card image is located.</returns>
+            public static (Point, Point) GetCardSplashCoords((Point, Point) wp)
+            {
+                Size size = new(Math.Abs(wp.Item2.X - wp.Item1.X), Math.Abs(wp.Item2.Y - wp.Item1.Y));
+
+                if (IsWindowed(size))
+                {
+                    size = new(Math.Abs(wp.Item2.X - wp.Item1.X) - WIDTH_BORDER_OFFSET, Math.Abs(wp.Item2.Y - wp.Item1.Y) - HEIGHT_BORDER_OFFSET);
+                    wp.Item1.X += WIDTH_BORDER_OFFSET / 2;
+                    wp.Item1.Y += HEIGHT_BORDER_OFFSET - WIDTH_BORDER_OFFSET / 2;
+                }
+
+                var newPoints = (new Point((int)(SplashRelPos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
+                                           (int)(SplashRelPos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
+                                 new Point((int)(SplashRelPos.X_REL_END_POS * size.Width) + wp.Item1.X,
+                                           (int)(SplashRelPos.Y_REL_END_POS * size.Height) + wp.Item1.Y));
                 return newPoints;
             }
         }

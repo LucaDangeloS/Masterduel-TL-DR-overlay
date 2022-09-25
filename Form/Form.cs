@@ -4,6 +4,7 @@ using Masterduel_TLDR_overlay.Screen;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace Masterduel_TLDR_overlay
@@ -33,20 +34,32 @@ namespace Masterduel_TLDR_overlay
             }
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        { 
-
-        }
 
         private async void convert_to_text_clickAsync(object sender, EventArgs e) {
 
             var handler = new Windows.Handler();
             var wl = handler.GetWindowPoints(Masterduel.WINDOW_NAME);
-            var newPoints = Masterduel.Window.GetCardTitleCoords(wl);
-            // 16 * 39 offset for borders // <- 8     8 ->
-            Bitmap bm = ScreenProcessing.TakeScreenshotFromArea(newPoints.Item1, newPoints.Item2);
+            var newPoints = Masterduel.Window.GetCardSplashCoords(wl);
 
+            Bitmap bm = ScreenProcessing.TakeScreenshotFromArea(newPoints.Item1, newPoints.Item2);
             pictureBox1.Image = bm;
+
+            if (pictureBox1.Image != null)
+            {
+                try
+                {
+                    // REPLACE
+                    Bitmap bm2 = new Bitmap(@"temp.jpg");
+                    float comp = ScreenProcessing.CompareImages(bm, bm2);
+                    Debug.WriteLine(comp);
+                    bm2.Dispose();
+                } catch (Exception excp)
+                {
+                    Debug.WriteLine(excp);
+                }
+            }
+            // REPLACE
+            bm.Save(@"temp.jpg");
 
             OCR ocr = new();
             var Result = ocr.ReadImage(bm);
@@ -63,7 +76,10 @@ namespace Masterduel_TLDR_overlay
             {
                 Debug.WriteLine(excp.Message);
             }
-
+            // Get current window
+            [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+            static extern IntPtr GetForegroundWindow();
+            Debug.WriteLine(GetForegroundWindow() + "  " + handler.WinHandle);
         }
     }
 }

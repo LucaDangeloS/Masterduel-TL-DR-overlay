@@ -51,7 +51,7 @@ namespace Masterduel_TLDR_overlay.Api
         public override string ToString()
         {
             return "Name: " + Name
-                +"\nDescription: " + Desc;
+                +"\r\nDescription: " + Desc;
         }
     }
     class JsonCardResponse

@@ -22,6 +22,8 @@ namespace Masterduel_TLDR_overlay.Windows
         [DllImport("gdi32.dll", CharSet = CharSet.Auto, EntryPoint = "GetCurrentObject", ExactSpelling = true, SetLastError = true)]
         private static extern IntPtr IntGetCurrentObject(HandleRef hDC, int uObjectType);
 
+        public IntPtr WinHandle;
+
         private IntPtr GetWinHandle(string windowName)
         {
             IntPtr hWnd = IntPtr.Zero;
@@ -35,10 +37,11 @@ namespace Masterduel_TLDR_overlay.Windows
                 }
             }
             if (hWnd == IntPtr.Zero) throw new NoWindowFoundException("No window with name " + windowName + " found.");
+            WinHandle = hWnd;
             return hWnd;
         }
 
-        private bool GetWindowBoundaries(IntPtr hWnd, ref Boundaries b)
+        private static bool GetWindowBoundaries(IntPtr hWnd, ref Boundaries b)
         {
             return GetWindowRect(hWnd, ref b);
         }
