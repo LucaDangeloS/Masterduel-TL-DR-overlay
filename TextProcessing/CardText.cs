@@ -109,9 +109,9 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 Debug.WriteLine(word + " : " + dict[word] + "\r\n");
             }
         }
-        static public void GetDescFeatures(CardInfo card)
+         static public void GetDescFeatures(CardInfo card)
         {
-            string dir = @"C:\Users\Lucad\Desktop\Cosas\masterduel-tldr-overlay\Masterduel TLDR overlay\";
+            string dir = @"C:\Users\Lucad\Desktop\Cosas\Masterduel-TL-DR-overlay-master\";
             
             var FalseVec = new Dictionary<string, int>();
             var TrueVec = new Dictionary<string, int>();
@@ -152,20 +152,15 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             {
                 string[] ret = new string[0];
                 string buffer = "";
-                int counter = 0;
 
                 foreach (string s in lines)
                 {
-                    if (counter == 0)
-                    {
-                        buffer = s;
-                    }
-                    counter++;
+                    buffer = s.Split(" ")[0];
 
                     foreach (string s2 in Similarity.GetSubStringsCointainingWord("negate", s))
                     {
                         Array.Resize(ref ret, ret.Length + 1);
-                        ret[^1] = buffer + " " + s2;
+                        ret[^1] = $"{buffer} {s2}";
                     }
                 }
                 return ret;
@@ -182,7 +177,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 // get dot product
                 var dotProduct = allWords.Sum(word => vec1.GetValueOrDefault(word) * vec2.GetValueOrDefault(word));
                 // get magnitudes
-                var magnitude1 = Math.Sqrt(vec1.Sum(x => x.Value * x.Value));
+                var magnitude1 = Math.Sqrt(vec1.Sum(x => Math.Pow(x.Value, 2)));
                 var magnitude2 = Math.Sqrt(vec2.Sum(x => x.Value * x.Value));
                 // get cosine similarity
                 var cosine = dotProduct / (magnitude1 * magnitude2);
@@ -209,6 +204,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 
                 // return the similarity coefficient between compVec and resVec
                 float precision = 0;
+
                 for (int i = 0; i < resVec.Count; i++)
                 {
                     if (resVec[i] == compVec[i])
@@ -273,7 +269,25 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             }
 
             // Normalize TF, divide term ocurrence in card section divided by total ocurrences of term in collection
-        }
+            // Assume one negate per card
+            public static Dictionary<string, double> normalizeTermVector(string[] str)
+            {
+                var dict = new Dictionary<string, double>();
+                var tfDict = new Dictionary<string, int>();
+                int tf = 0;
 
+                foreach (string line in str)
+                {
+                    tf = 0;
+                    foreach (string n in GetSubStringsCointainingWord("negate", line))
+                    {
+                        addToDict(StripSpecialCharacters(n.ToLower(), "():;[]"), ref dict);
+                        //Debug.WriteLine(n);
+                    }
+                }
+
+                return dict;
+            }
+        }
     }
 }
