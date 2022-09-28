@@ -1,7 +1,7 @@
 # Masterduel TLDR overlay
 
 # TODOs
-- [ ] Database module
+- [ ] Database module (SQLite)
 - [ ] Text description processing module
 - [ ] UI module
 - [ ] Create main loop/event driven logic

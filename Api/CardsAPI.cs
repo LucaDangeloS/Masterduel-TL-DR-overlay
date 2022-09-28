@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Json;
+using Masterduel_TLDR_overlay.Masterduel;
 using System.Runtime.CompilerServices;
 using System.Security.Policy;
 using System.Text;
@@ -47,21 +48,6 @@ namespace Masterduel_TLDR_overlay.Api
         }
     }
 
-    public class CardInfo
-    {
-        public string Name { get; set; }
-        public string Desc { get; set; }
-        public CardInfo(string name, string desc)
-        {
-            Name = name;
-            Desc = desc;
-        }
-        public override string ToString()
-        {
-            return "Name: " + Name
-                +"\r\nDescription: " + Desc;
-        }
-    }
     class JsonCardResponse
     {
         public List<CardInfo> Data { get; set; }

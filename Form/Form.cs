@@ -1,3 +1,4 @@
+using Masterduel_TLDR_overlay.Masterduel;
 using Masterduel_TLDR_overlay.Api;
 using Masterduel_TLDR_overlay.Ocr;
 using Masterduel_TLDR_overlay.Screen;
@@ -37,12 +38,12 @@ namespace Masterduel_TLDR_overlay
 
         private async void convert_to_text_clickAsync(object sender, EventArgs e) {
 
-            var handler = new Windows.Handler();
-            var wl = handler.GetWindowPoints(Masterduel.WINDOW_NAME);
-            var newPoints = Masterduel.Window.GetCardTitleCoords(wl);
+            //var handler = new Windows.Handler();
+            //var wl = handler.GetWindowPoints(MasterduelWindow.WINDOW_NAME);
+            //var newPoints = MasterduelWindow.Window.GetCardTitleCoords(wl);
 
-            Bitmap bm = ScreenProcessing.TakeScreenshotFromArea(newPoints.Item1, newPoints.Item2);
-            pictureBox1.Image = bm;
+            //Bitmap bm = ScreenProcessing.TakeScreenshotFromArea(newPoints.Item1, newPoints.Item2);
+            //pictureBox1.Image = bm;
 
             //if (pictureBox1.Image != null)
             //{
@@ -61,32 +62,36 @@ namespace Masterduel_TLDR_overlay
             //// REPLACE
             //bm.Save(@"temp.jpg");
 
-            OCR ocr = new();
-            var Result = ocr.ReadImage(bm);
-            var reformattedCardName = TextProcessing.CardText.TrimCardName(Result.Text, TextProcessing.CardText.Trim_aggressiveness.Light);
-            endText.Text = "Original: " + Result.Text + "\r\n" + reformattedCardName;
-            try
-            {
-                List<CardInfo> apiRes;
-                if (reformattedCardName.Length > 10)
-                {
-                    apiRes = await CardsAPI.GetCardByNameAsync(reformattedCardName);
-                } else
-                {
-                    apiRes = await CardsAPI.GetCardByExactNameAsync(reformattedCardName);
-                }
-                endText.Text = endText.Text + "\r\n\r\n" + string.Join("\r\n\r\n", apiRes);
-            } catch (HttpRequestException excp)
-            {
-                Debug.WriteLine(excp.Message);
-            } catch (NoCardsFoundException excp)
-            {
-                Debug.WriteLine(excp.Message);
-            }
+            //OCR ocr = new();
+            //var Result = ocr.ReadImage(bm);
+            //var reformattedCardName = TextProcessing.CardText.TrimCardName(Result.Text, TextProcessing.CardText.Trim_aggressiveness.Light);
+            //endText.Text = "Original: " + Result.Text + "\r\n" + reformattedCardName;
+            //try
+            //{
+            //    List<CardInfo> apiRes;
+            //    if (reformattedCardName.Length > 10)
+            //    {
+            //        apiRes = await CardsAPI.GetCardByNameAsync(reformattedCardName);
+            //    } else
+            //    {
+            //        apiRes = await CardsAPI.GetCardByExactNameAsync(reformattedCardName);
+            //    }
+            //    endText.Text = endText.Text + "\r\n\r\n" + string.Join("\r\n\r\n", apiRes);
+            //    TextProcessing.CardText.GetDescFeatures(apiRes[0]);
+            //} catch (HttpRequestException excp)
+            //{
+            //    Debug.WriteLine(excp.Message);
+            //} catch (NoCardsFoundException excp)
+            //{
+            //    Debug.WriteLine(excp.Message);
+            //}
+
+            TextProcessing.CardText.GetDescFeatures(new CardInfo("text", "text"));
+
             // Get current window
-            [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-            static extern IntPtr GetForegroundWindow();
-            Debug.WriteLine(GetForegroundWindow() + "  " + handler.WinHandle);
+            //[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+            //static extern IntPtr GetForegroundWindow();
+            //Debug.WriteLine(GetForegroundWindow() + "  " + handler.WinHandle);
         }
     }
 }

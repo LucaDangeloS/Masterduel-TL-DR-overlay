@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Masterduel_TLDR_overlay.Screen
 {
-    internal static class Masterduel
+    internal static class MasterduelWindow
     {
         public static readonly string WINDOW_NAME = "masterduel";
         private static readonly float ASPECT_RATIO = 0.5625f;
@@ -18,19 +18,33 @@ namespace Masterduel_TLDR_overlay.Screen
 
         // 16 * 39 offset for borders
         public static class Window {
-            protected static class TextRelPos
+            protected interface RelPos
             {
-                public static float X_REL_INIT_POS = 0.0191f;
-                public static float Y_REL_INIT_POS = 0.14f;
-                public static float X_REL_END_POS = 0.19f;
-                public static float Y_REL_END_POS = 0.18f;
+                public float X_REL_INIT_POS { get; }
+                public float Y_REL_INIT_POS { get; }
+                public float X_REL_END_POS { get; }
+                public float Y_REL_END_POS { get; }
+            }
+            protected class TextRelPos : RelPos
+            {
+                public float X_REL_INIT_POS => 0.0191f;
+                public float Y_REL_INIT_POS => 0.14f;
+                public float X_REL_END_POS => 0.19f;
+                public float Y_REL_END_POS => 0.18f;
             };
-            protected static class SplashRelPos
+            protected class DeckEditorTextRelPos : RelPos
             {
-                public static float X_REL_INIT_POS = 0.030f;
-                public static float Y_REL_INIT_POS = 0.245f;
-                public static float X_REL_END_POS = 0.0922f;
-                public static float Y_REL_END_POS = 0.3546f;
+                public float X_REL_INIT_POS => 0.03f;
+                public float Y_REL_INIT_POS => 0.11f;
+                public float X_REL_END_POS => 0.211f;
+                public float Y_REL_END_POS => 0.155f;
+            };
+            protected class SplashRelPos : RelPos
+            {
+                public float X_REL_INIT_POS => 0.030f;
+                public float Y_REL_INIT_POS => 0.245f;
+                public float X_REL_END_POS => 0.0922f;
+                public float Y_REL_END_POS => 0.3546f;
             };
             private static bool IsWindowed(Size size)
             {
@@ -55,11 +69,11 @@ namespace Masterduel_TLDR_overlay.Screen
                     wp.Item1.X += WIDTH_BORDER_OFFSET / 2;
                     wp.Item1.Y += HEIGHT_BORDER_OFFSET - WIDTH_BORDER_OFFSET / 2;
                 }
-
-                var newPoints = (new Point((int)(TextRelPos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
-                                           (int)(TextRelPos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
-                                 new Point((int)(TextRelPos.X_REL_END_POS * size.Width) + wp.Item1.X,
-                                           (int)(TextRelPos.Y_REL_END_POS * size.Height) + wp.Item1.Y));
+                RelPos pos = new DeckEditorTextRelPos();
+                var newPoints = (new Point((int)(pos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
+                                           (int)(pos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
+                                 new Point((int)(pos.X_REL_END_POS * size.Width) + wp.Item1.X,
+                                           (int)(pos.Y_REL_END_POS * size.Height) + wp.Item1.Y));
                 return newPoints;
             }
 
@@ -80,11 +94,11 @@ namespace Masterduel_TLDR_overlay.Screen
                     wp.Item1.X += WIDTH_BORDER_OFFSET / 2;
                     wp.Item1.Y += HEIGHT_BORDER_OFFSET - WIDTH_BORDER_OFFSET / 2;
                 }
-
-                var newPoints = (new Point((int)(SplashRelPos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
-                                           (int)(SplashRelPos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
-                                 new Point((int)(SplashRelPos.X_REL_END_POS * size.Width) + wp.Item1.X,
-                                           (int)(SplashRelPos.Y_REL_END_POS * size.Height) + wp.Item1.Y));
+                RelPos pos = new SplashRelPos();
+                var newPoints = (new Point((int)(pos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
+                                           (int)(pos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
+                                 new Point((int)(pos.X_REL_END_POS * size.Width) + wp.Item1.X,
+                                           (int)(pos.Y_REL_END_POS * size.Height) + wp.Item1.Y));
                 return newPoints;
             }
         }
