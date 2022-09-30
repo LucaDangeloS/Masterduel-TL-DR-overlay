@@ -6,12 +6,16 @@ using Newtonsoft.Json.Bson;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Drawing.Text;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static Catalyst.Models.FastText;
 
 namespace Masterduel_TLDR_overlay.TextProcessing
 {
@@ -80,9 +84,9 @@ namespace Masterduel_TLDR_overlay.TextProcessing
         {
             public static class Monsters
             {
-                public static string NEGATION = @"(?:(?:when|(Quick Effect|opponent's|either player's)|if|face-up|the effects of){1,2}(?:[^.]*?|[^.]*?\.{1}.{0,30}?)|,[ ]?|:[ ]?|;[ ]?|^|\. )(?<!to |cannot be |but |but its effects are |but it has its effects |but its effect\(s\) is |was )(negate[d]?)(?:[^.])*";
                 public static string[] NEGATION2 = { "activation", "that", "opponent's", "opponent", "activated", "when" };
                 public static string[] NON_NEGATION2 = { "special", "summon", "its", "but", "are" };
+                public static string[] FALSE_NEGATIONS = { "cannot be negated"};
                 // that do not have "is" or "was" before the "negated"
                 // forward lookup for word "destroy", "banish"
                 // asign importance function relating how close a word is to the keywords?
@@ -109,38 +113,72 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 Debug.WriteLine(word + " : " + dict[word] + "\r\n");
             }
         }
-         static public void GetDescFeatures(CardInfo card)
+        static public void GetDescFeatures(CardInfo card)
         {
-            string dir = @"C:\Users\Lucad\Desktop\Cosas\Masterduel-TL-DR-overlay-master\";
+            string dir = @"C:\Users\Lucad\Desktop\Cosas\masterduel-tldr-overlay\Masterduel TLDR overlay\";
+            var QueryVec = new Dictionary<string, int>();
+
+            string[] falseN = TextUtils.FileParser(dir + "/FalseNegations_stripped.txt");
+            string[] trueN = TextUtils.FileParser(dir + "/TrueNegations_stripped.txt");
+            var (matches, rest) = TextUtils.GetMatchingSentencesFromText(card.Desc, "negate", CardRegex.Monsters.FALSE_NEGATIONS);
+
+            // Get term vectors from files
+            var TrueVec = TextUtils.GetTermVectorFromFile(trueN);
+            var FalseVec = TextUtils.GetTermVectorFromFile(falseN);
             
+            // Check for negates
+            foreach (string sentence in matches)
+            {
+                var trueCoeff = Similarity.CosineSimilarity(QueryVec, TrueVec);
+                var falseCoeff = Similarity.CosineSimilarity(QueryVec, FalseVec);
+
+                if (trueCoeff > falseCoeff)
+                {
+                    Debug.WriteLine($"{sentence} HAS NEGATION");
+                }
+            }
+        }
+
+        static public void TestModel()
+        {
+            string dir = @"C:\Users\Lucad\Desktop\Cosas\masterduel-tldr-overlay\Masterduel TLDR overlay\";
+
             var FalseVec = new Dictionary<string, int>();
             var TrueVec = new Dictionary<string, int>();
             var QueryVec = new Dictionary<string, int>();
 
             //load data from txt files
-            string[] falseN = Similarity.FileParser(dir + "/FalseNegations.txt");
-            string[] trueN = Similarity.FileParser(dir + "/TrueNegations.txt");
-            string[] testN = TextUtils.ExtractMultipleEffects(Similarity.FileParser(dir + "/TestNegations.txt"));
+            string[] falseN = TextUtils.FileParser(dir + "/FalseNegations_stripped.txt");
+            string[] trueN = TextUtils.FileParser(dir + "/TrueNegations_stripped.txt");
+            string[] testN = TextUtils.FileParser(dir + "/TestNegations.txt");
 
             // Get term vectors from files
-            TrueVec = Similarity.GetTermVector(trueN);
-            FalseVec = Similarity.GetTermVector(falseN);
+            TrueVec = TextUtils.GetTermVectorFromFile(trueN);
+            FalseVec = TextUtils.GetTermVectorFromFile(falseN);
 
-            
+
             List<bool> testFileTarget = new();
             int i = 1;
             foreach (string cardText in testN)
             {
-                QueryVec = Similarity.GetTermVector(cardText);
+                QueryVec = TextUtils.GetTermVector(cardText);
                 Debug.Write(i + " ->\r\nTrue Negation score: ");
                 var b1 = Similarity.CosineSimilarity(QueryVec, TrueVec);
                 Debug.WriteLine(b1);
                 Debug.Write("False Negation score: ");
                 var b2 = Similarity.CosineSimilarity(QueryVec, FalseVec);
+                if (cardText.Contains(CardRegex.Monsters.FALSE_NEGATIONS[0]))
+                {
+                    testFileTarget.Add(false);
+                }
+                else
+                {
+                    testFileTarget.Add(b1 > b2);
+                }
                 Debug.WriteLine(b2);
                 Debug.WriteLine("\r\n");
 
-                testFileTarget.Add(b1 > b2);
+
                 i++;
             }
             Debug.WriteLine(Similarity.CalculatePrecision(testFileTarget, testN));
@@ -148,22 +186,67 @@ namespace Masterduel_TLDR_overlay.TextProcessing
 
         public class TextUtils
         {
-            static public string[] ExtractMultipleEffects(string[] lines)
+            public static Dictionary<string, int> GetTermVectorFromFile(string[] str)
             {
-                string[] ret = new string[0];
-                string buffer = "";
+                var dict = new Dictionary<string, int>();
 
-                foreach (string s in lines)
+                foreach (string line in str)
                 {
-                    buffer = s.Split(" ")[0];
+                    addToDict(StripSpecialCharacters(line.ToLower(), ":;[],.-"), ref dict);
+                }
 
-                    foreach (string s2 in Similarity.GetSubStringsCointainingWord("negate", s))
+                return dict;
+            }
+
+            public static Dictionary<string, int> GetTermVector(string str)
+            {
+                var dict = new Dictionary<string, int>();
+
+                foreach (string word in str.Split(" "))
+                {
+                    addToDict(word, ref dict);
+                }
+
+                return dict;
+            }
+
+            public static (List<string> matches, string rest) GetMatchingSentencesFromText(string str, string word, string[]? blackList)
+            {
+                List<string> ListOfTermVectors = new();
+                var (matchedString, rest) = GetSubStringsCointainingWord(StripSpecialCharacters(str.ToLower(), ":;[],."), word, blackList);
+
+                foreach (string match in matchedString)
+                {
+                    ListOfTermVectors.Add(match);
+                }
+
+                return (ListOfTermVectors, rest);
+            }
+
+            public static (string[] matchedString, string rest) GetSubStringsCointainingWord(string word, string text, string[]? blackList)
+            {
+                string[] rest = new string[0];
+                string[] results = new string[0];
+                // TODO: change 
+                foreach (string sentence in text.Split('.'))
+                {
+                    if (sentence.ToLower().Contains(word) && (blackList == null || !blackList.Any(sentence.ToLower().Contains)))
                     {
-                        Array.Resize(ref ret, ret.Length + 1);
-                        ret[^1] = $"{buffer} {s2}";
+                        Array.Resize(ref results, results.Length + 1);
+                        results[results.Length - 1] = sentence;
+                    }
+                    else
+                    {
+                        Array.Resize(ref rest, rest.Length + 1);
+                        rest[^1] = sentence;
                     }
                 }
-                return ret;
+                return (results, string.Join(".", rest));
+            }
+
+            public static string[] FileParser(string dir)
+            {
+                return File.ReadAllLines(dir).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToArray();
             }
         }
 
@@ -177,7 +260,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 // get dot product
                 var dotProduct = allWords.Sum(word => vec1.GetValueOrDefault(word) * vec2.GetValueOrDefault(word));
                 // get magnitudes
-                var magnitude1 = Math.Sqrt(vec1.Sum(x => Math.Pow(x.Value, 2)));
+                var magnitude1 = Math.Sqrt(vec1.Sum(x => x.Value * x.Value));
                 var magnitude2 = Math.Sqrt(vec2.Sum(x => x.Value * x.Value));
                 // get cosine similarity
                 var cosine = dotProduct / (magnitude1 * magnitude2);
@@ -188,106 +271,36 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             static public float CalculatePrecision(List<bool> resVec, string[] file)
             {
                 List<bool> compVec = new List<bool>();
-
+                
                 foreach (string line in file)
                 {
                     string temp = line.Split(' ')[0];
                     try
-                    { 
+                    {
                         compVec.Add(Boolean.Parse(temp));
-                    } 
-                    catch (System.FormatException e)
+                    }
+                    catch (FormatException e)
                     {
                         throw new Exception("Test file format not valid. First word in each line must be either 'true' or 'false'");
                     }
                 }
-                
+
                 // return the similarity coefficient between compVec and resVec
                 float precision = 0;
-
                 for (int i = 0; i < resVec.Count; i++)
                 {
                     if (resVec[i] == compVec[i])
+                    {
                         precision++;
+                    } else
+                    {
+                        Debug.WriteLine($"Failed at line {i+1} expected {compVec[i]} but got {resVec[i]}");
+                    }
                 }
                 return precision / resVec.Count;
             }
 
-            public static Dictionary<string, int> GetTermVector(string[] str)
-            {
-                var dict = new Dictionary<string, int>();
-
-                foreach (string line in str)
-                {
-                    foreach (string n in GetSubStringsCointainingWord("negate", line))
-                    {
-                        addToDict(StripSpecialCharacters(n.ToLower(), "():;[]"), ref dict);
-                        //Debug.WriteLine(n);
-                    }
-                }
-
-                return dict;
-            }
-
-            public static Dictionary<string, int> GetTermVector(string str)
-            {
-                var dict = new Dictionary<string, int>();
-
-                addToDict(StripSpecialCharacters(str.ToLower(), "():;[]"), ref dict);
-
-                return dict;
-            }
-
-            public static string[] GetSubStringsCointainingWord(string word, string text)
-            {
-                string[] temp = new string[0];
-                // TODO: change to a regex
-                foreach (string sentence in text.Split('.'))
-                {
-                    if (sentence.ToLower().Contains(word))
-                    {
-                        Array.Resize(ref temp, temp.Length + 1);
-                        temp[^1] = sentence;
-                    }
-                }
-                return temp;
-            }
-
-            public static Dictionary<string, double> GetIdfVector(Dictionary<string, int> ocurrences, int ColSize)
-            {
-                var idfVector = new Dictionary<string, double>();
-                foreach (string word in ocurrences.Keys)
-                {
-                    idfVector[word] = 1 + Math.Log(ColSize/ocurrences[word]);
-                }
-                return idfVector;
-            }
-
-            public static string[] FileParser(string dir)
-            {
-                return File.ReadAllLines(dir).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToArray();
-            }
-
-            // Normalize TF, divide term ocurrence in card section divided by total ocurrences of term in collection
-            // Assume one negate per card
-            public static Dictionary<string, double> normalizeTermVector(string[] str)
-            {
-                var dict = new Dictionary<string, double>();
-                var tfDict = new Dictionary<string, int>();
-                int tf = 0;
-
-                foreach (string line in str)
-                {
-                    tf = 0;
-                    foreach (string n in GetSubStringsCointainingWord("negate", line))
-                    {
-                        addToDict(StripSpecialCharacters(n.ToLower(), "():;[]"), ref dict);
-                        //Debug.WriteLine(n);
-                    }
-                }
-
-                return dict;
-            }
         }
+
     }
 }

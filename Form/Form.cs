@@ -38,7 +38,19 @@ namespace Masterduel_TLDR_overlay
 
         private async void convert_to_text_clickAsync(object sender, EventArgs e) {
 
+            // top level
             //var handler = new Windows.Handler();
+            //var mouseClicked = Windows.Handler.GetLeftMousePressed();
+            //Debug.WriteLine(mouseClicked);
+            //TextProcessing.CardText.GetDescFeatures(new CardInfo("text", "text"));
+
+            // Get current window
+            //[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+            //static extern IntPtr GetForegroundWindow();
+            //Debug.WriteLine(GetForegroundWindow() + "  " + handler.WinHandle);
+            
+            
+            // bottom level
             //var wl = handler.GetWindowPoints(MasterduelWindow.WINDOW_NAME);
             //var newPoints = MasterduelWindow.Window.GetCardTitleCoords(wl);
 
@@ -59,8 +71,6 @@ namespace Masterduel_TLDR_overlay
             //        Debug.WriteLine(excp);
             //    }
             //}
-            //// REPLACE
-            //bm.Save(@"temp.jpg");
 
             //OCR ocr = new();
             //var Result = ocr.ReadImage(bm);
@@ -86,12 +96,6 @@ namespace Masterduel_TLDR_overlay
             //    Debug.WriteLine(excp.Message);
             //}
 
-            TextProcessing.CardText.GetDescFeatures(new CardInfo("text", "text"));
-
-            // Get current window
-            //[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-            //static extern IntPtr GetForegroundWindow();
-            //Debug.WriteLine(GetForegroundWindow() + "  " + handler.WinHandle);
         }
     }
 }

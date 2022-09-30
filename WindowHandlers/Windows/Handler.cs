@@ -18,6 +18,16 @@ namespace Masterduel_TLDR_overlay.Windows
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static private extern bool GetWindowRect(IntPtr hWnd, ref Boundaries lpRect);
+        
+        [DllImport("user32.dll")]
+        static extern short GetAsyncKeyState(int VirtualKeyPressed);
+        public bool GetLeftMousePressed()
+        {
+            if (GetAsyncKeyState(0x01) == 0)
+                return false;
+            else
+                return true;
+        }
 
         [DllImport("gdi32.dll", CharSet = CharSet.Auto, EntryPoint = "GetCurrentObject", ExactSpelling = true, SetLastError = true)]
         private static extern IntPtr IntGetCurrentObject(HandleRef hDC, int uObjectType);
