@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Catalyst" Version="1.0.31087" />
-    <PackageReference Include="Catalyst.Models.English" Version="1.0.30952" />
+    <PackageReference Include="SQLite" Version="3.13.0" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.116" />
     <PackageReference Include="Tesseract.Net.SDK" Version="4.5.411" />
   </ItemGroup>
 

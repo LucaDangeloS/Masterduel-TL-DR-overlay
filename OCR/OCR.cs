@@ -7,6 +7,7 @@ namespace Masterduel_TLDR_overlay.Ocr
     {
         private OcrApi api;
 
+        // Public methods
         public OCR()
         {
             api = OcrApi.Create();

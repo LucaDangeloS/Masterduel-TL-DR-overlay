@@ -1,8 +1,5 @@
-﻿using Catalyst;
-using Masterduel_TLDR_overlay.Api;
+﻿using Masterduel_TLDR_overlay.Api;
 using Masterduel_TLDR_overlay.Masterduel;
-using Mosaik.Core;
-using Newtonsoft.Json.Bson;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,21 +13,25 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Masterduel_TLDR_overlay.TextProcessing;
-using static Catalyst.Models.FastText;
 using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
 using static Masterduel_TLDR_overlay.Masterduel.CardInfo.SummarizedData;
 
 namespace Masterduel_TLDR_overlay.TextProcessing
 {
+    /// <summary>
+    ///    This is a sttatic class.
+    /// </summary>
     internal static class CardText
     {
+        // Public methods
+
         /// <summary>
         /// Trims and cleans up the card name string to remove missrecognized characters and artifacts from the OCR algorithm.
         /// </summary>
         /// <param name="name">The card raw name.</param>
         /// <param name="aggressiveness">The aggressiveness parameter determines how many characters will be trimmed from both sides of the string.</param>
         /// <returns>Returns the string with the cleaned up and trimmed card name.</returns>
-        public static string TrimCardName(string name, Trim_aggressiveness aggressiveness)
+        static public string TrimCardName(string name, Trim_aggressiveness aggressiveness)
         {
             StringBuilder sb = new();
             int agr_int = (int)aggressiveness;
@@ -48,7 +49,8 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             }
             if (aggressiveness == Trim_aggressiveness.Light)
             {
-                return TextUtils.StripSpecialCharacters(str[..1], ":!") + str[1..len] + TextUtils.StripSpecialCharacters(str.Substring(len - 1, 1), ":!");
+                return TextUtils.StripSpecialCharacters(str[..1], ":!") + 
+                    str[1..len] + TextUtils.StripSpecialCharacters(str.Substring(len - 1, 1), ":!");
             }
             return str.Substring(agr_int, len - agr_int * 2);
         }
@@ -60,37 +62,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             Moderate,
             Aggresive
         }
-
-        private class TextExceptions
-        {
-            public static class Monsters
-            {
-                public static string[] FALSE_NEGATIONS = { "cannot be negated"};
-                //public static string[] NEGATION2 = { "activation", "that", "opponent's", "opponent", "activated", "when" };
-                //public static string[] NON_NEGATION2 = { "special", "summon", "its", "but", "are" };
-            }
-
-        }
-
-        static public void addToDict(string str, ref Dictionary<string, int> dict)
-        {
-            foreach (string word in str.Split(" "))
-            {
-                if (dict.ContainsKey(word))
-                    dict[word]++;
-                else
-                    dict[word] = 1;
-            }
-        }
-        static public void printDict<T>(IDictionary<string, T> dict)
-        {
-            var temp = from entry in dict orderby entry.Value ascending select entry;
-            var sortedDict = temp.ToDictionary(pair => pair.Key, pair => pair.Value);
-            foreach (string word in sortedDict.Keys)
-            {
-                Debug.WriteLine(word + " : " + dict[word] + "\r\n");
-            }
-        }
+        
         static public SummarizedData GetDescFeatures(CardInfo card)
         {
             SummarizedData summerizedCard = new();
@@ -101,6 +73,29 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             summerizedCard.AddEffects(negations);
 
             return summerizedCard;
+        }
+
+        // Private methods
+        static private void AddToDict(string str, ref Dictionary<string, int> dict)
+        {
+            foreach (string word in str.Split(" "))
+            {
+                if (dict.ContainsKey(word))
+                    dict[word]++;
+                else
+                    dict[word] = 1;
+            }
+        }
+        
+        private class TextExceptions
+        {
+            public static class Monsters
+            {
+                public static string[] FALSE_NEGATIONS = { "cannot be negated" };
+                //public static string[] NEGATION2 = { "activation", "that", "opponent's", "opponent", "activated", "when" };
+                //public static string[] NON_NEGATION2 = { "special", "summon", "its", "but", "are" };
+            }
+
         }
 
         private static List<Effect> GetCardNegations(List<string> matches)
@@ -132,30 +127,30 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             return effectsList;
         }
 
-        public static Dictionary<string, int> GetTermVectorFromFile(string[] str)
+        private static Dictionary<string, int> GetTermVectorFromFile(string[] str)
         {
             var dict = new Dictionary<string, int>();
 
             foreach (string line in str)
             {
-                addToDict(TextUtils.StripSpecialCharacters(line.ToLower(), ":;[],.-"), ref dict);
+                AddToDict(TextUtils.StripSpecialCharacters(line.ToLower(), ":;[],.-"), ref dict);
             }
             
             return dict;
         }
-        public static Dictionary<string, int> GetTermVector(string str)
+        private static Dictionary<string, int> GetTermVector(string str)
         {
             var dict = new Dictionary<string, int>();
 
             foreach (string word in str.Split(" "))
             {
-                addToDict(word, ref dict);
+                AddToDict(word, ref dict);
             }
 
             return dict;
         }
 
-        public class Similarity
+        protected class Similarity
         {
             // Public methods
             public static double CosineSimilarity(Dictionary<string, int> vec1, Dictionary<string, int> vec2)
@@ -254,6 +249,15 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 return precision / resVec.Count;
             }
 
+        }
+        static private void PrintDict<T>(IDictionary<string, T> dict)
+        {
+            var temp = from entry in dict orderby entry.Value ascending select entry;
+            var sortedDict = temp.ToDictionary(pair => pair.Key, pair => pair.Value);
+            foreach (string word in sortedDict.Keys)
+            {
+                Debug.WriteLine(word + " : " + dict[word] + "\r\n");
+            }
         }
 
     }

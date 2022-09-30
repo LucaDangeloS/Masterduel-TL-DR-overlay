@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Masterduel_TLDR_overlay.Screen
 {
+    /// <summary>
+    ///    This is a sttatic class.
+    /// </summary>
     internal static class MasterduelWindow
     {
         public static readonly string WINDOW_NAME = "masterduel";

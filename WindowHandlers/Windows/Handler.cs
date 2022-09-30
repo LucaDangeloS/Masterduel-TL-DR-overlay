@@ -21,6 +21,17 @@ namespace Masterduel_TLDR_overlay.Windows
         
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(int VirtualKeyPressed);
+
+        [DllImport("gdi32.dll", CharSet = CharSet.Auto, EntryPoint = "GetCurrentObject", ExactSpelling = true, SetLastError = true)]
+        private static extern IntPtr IntGetCurrentObject(HandleRef hDC, int uObjectType);
+
+        private IntPtr WinHandle;
+
+        // Public methods
+        public Handler(string windowName)
+        {
+            WinHandle = GetWinHandle(windowName);
+        }
         public bool GetLeftMousePressed()
         {
             if (GetAsyncKeyState(0x01) == 0)
@@ -28,13 +39,34 @@ namespace Masterduel_TLDR_overlay.Windows
             else
                 return true;
         }
+        public bool IsWindowCurrentlySelected()
+        {
+            [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+            static extern IntPtr GetForegroundWindow();
 
-        [DllImport("gdi32.dll", CharSet = CharSet.Auto, EntryPoint = "GetCurrentObject", ExactSpelling = true, SetLastError = true)]
-        private static extern IntPtr IntGetCurrentObject(HandleRef hDC, int uObjectType);
+            return GetForegroundWindow() == WinHandle;
+        }
+        public (Point, Point) GetWindowPoints(string windowName)
+        {
+            Boundaries b = new Boundaries();
+            IntPtr hWnd = GetWinHandle(windowName);
+            var res = GetWindowBoundaries(hWnd, ref b);
+            if (!res) throw new NoDimensionsFoundException();
 
-        public IntPtr WinHandle;
+            return (new Point(b.Left, b.Top), new Point(b.Right, b.Bottom));
+        }
 
-        public IntPtr GetWinHandle(string windowName)
+        public (Point, Point) GetWindowPoints(IntPtr hWnd)
+        {
+            Boundaries b = new Boundaries();
+            var res = GetWindowBoundaries(hWnd, ref b);
+            if (!res) throw new NoDimensionsFoundException();
+
+            return (new Point(b.Left, b.Top), new Point(b.Right, b.Bottom));
+        }
+        
+        // Private methods
+        private IntPtr GetWinHandle(string windowName)
         {
             IntPtr hWnd = IntPtr.Zero;
             foreach (Process pList in Process.GetProcesses())
@@ -56,23 +88,5 @@ namespace Masterduel_TLDR_overlay.Windows
             return GetWindowRect(hWnd, ref b);
         }
 
-        public (Point, Point) GetWindowPoints(string windowName)
-        {
-            Boundaries b = new Boundaries();
-            IntPtr hWnd = GetWinHandle(windowName);
-            var res = GetWindowBoundaries(hWnd, ref b);
-            if (!res) throw new NoDimensionsFoundException();
-
-            return (new Point(b.Left, b.Top), new Point(b.Right, b.Bottom));
-        }
-
-        public (Point, Point) GetWindowPoints(IntPtr hWnd)
-        {
-            Boundaries b = new Boundaries();
-            var res = GetWindowBoundaries(hWnd, ref b);
-            if (!res) throw new NoDimensionsFoundException();
-
-            return (new Point(b.Left, b.Top), new Point(b.Right, b.Bottom));
-        }
     }
 }

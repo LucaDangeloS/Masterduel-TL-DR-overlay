@@ -25,7 +25,8 @@ namespace Masterduel_TLDR_overlay.WindowHandlers
         /// <exception cref="NoDimensionsFoundException">Thrown if no window with that name was found.</exception>
         /// <returns>A tuple of points, the first one being the upper-left corner and the second the bottom-right corner of the window in Point coordinates.</returns>
         public (Point, Point) GetWindowPoints(string windowName);
-        public IntPtr GetWinHandle(string windowName);
+        public bool IsWindowCurrentlySelected();
+        public bool GetLeftMousePressed();
         public bool GetLeftMousePressed();
 
         class NoWindowFoundException : Exception

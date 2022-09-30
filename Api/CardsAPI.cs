@@ -15,10 +15,15 @@ using System.Threading.Tasks;
 
 namespace Masterduel_TLDR_overlay.Api
 {
+    /// <summary>
+    ///    This is a sttatic class.
+    /// </summary>
     internal static class CardsAPI
     {
         private static readonly string BASE_URL = "https://db.ygoprodeck.com/api/v7/cardinfo.php";
         private static readonly HttpClient client = new();
+        
+        // Public methods
 
         /// <summary>
         /// Queries asynchronously the db.ygoprodeck database for a fuzzy search with the card name passed as parameter.

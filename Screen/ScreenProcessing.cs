@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing.Imaging;
-using System.Globalization;
-using System.Linq;
+﻿using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Masterduel_TLDR_overlay.Screen
 {
-    internal class ScreenProcessing
+    /// <summary>
+    ///    This is a sttatic class.
+    /// </summary>
+    internal static class ScreenProcessing
     {
+        // Public methods
+        
         /// <summary>
         /// Takes a screenshot of the rectangle delimited <c>from</c> a point <c>to</c> a point.
         /// </summary>
@@ -23,7 +19,7 @@ namespace Masterduel_TLDR_overlay.Screen
         public static Bitmap TakeScreenshotFromArea(Point from, Point to)
         {
             Size size = new(Math.Abs(to.X - from.X), Math.Abs(to.Y - from.Y));
-            Bitmap bm = new Bitmap(size.Width, size.Height);
+            Bitmap bm = new(size.Width, size.Height);
             Graphics g = Graphics.FromImage(bm);
 
             g.CopyFromScreen(from, Point.Empty, bm.Size);
@@ -41,8 +37,8 @@ namespace Masterduel_TLDR_overlay.Screen
         public static float CompareImages(Bitmap bm1, Bitmap bm2)
         {
             var size = (32, 32);
-            List<bool> iHash1 = getImageHash(bm1, size);
-            List<bool> iHash2 = getImageHash(bm2, size);
+            List<bool> iHash1 = GetImageHash(bm1, size);
+            List<bool> iHash2 = GetImageHash(bm2, size);
             // Debug.WriteLine(iHash1.Count * sizeof(bool));
 
             //determine the number of equal pixel (x of 256)
@@ -56,7 +52,7 @@ namespace Masterduel_TLDR_overlay.Screen
         /// <param name="bm1">The image Bitmap.</param>
         /// <param name="size">Dimensions of the image hash.</param>
         /// <returns>A <see cref="List"/> of <see cref="bool"/> values representing the hashmap.</returns>
-        public static List<bool> getImageHash(Bitmap bm, (int width, int height) size)
+        public static List<bool> GetImageHash(Bitmap bm, (int width, int height) size)
         {
             int bytesPerPixel = 4; //Format32bppArgb
             int maxPointerLenght = size.width * size.height * bytesPerPixel;
@@ -92,6 +88,7 @@ namespace Masterduel_TLDR_overlay.Screen
             return lResult;
         }
 
+        // Private methods
         private static bool PixelMetric(Color pixel)
         {
             // Grey scale > 0.5

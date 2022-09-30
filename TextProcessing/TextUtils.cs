@@ -6,8 +6,12 @@ using System.Threading.Tasks;
 
 namespace Masterduel_TLDR_overlay.TextProcessing
 {
-    internal class TextUtils
+    /// <summary>
+    ///    This is a sttatic class.
+    /// </summary>
+    internal static class TextUtils
     {
+        // Public methods
         public static string StripSpecialCharacters(string str, string chars)
         {
             List<char> lookup = new List<char>(chars);

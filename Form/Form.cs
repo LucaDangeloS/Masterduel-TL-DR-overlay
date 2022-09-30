@@ -2,14 +2,10 @@ using Masterduel_TLDR_overlay.Masterduel;
 using Masterduel_TLDR_overlay.Api;
 using Masterduel_TLDR_overlay.Ocr;
 using Masterduel_TLDR_overlay.Screen;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
-using Masterduel_TLDR_overlay.Windows;
 using Masterduel_TLDR_overlay.WindowHandlers;
 using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
+using static Masterduel_TLDR_overlay.WindowHandlers.WindowHandlerInterface;
 
 namespace Masterduel_TLDR_overlay
 {
@@ -39,12 +35,21 @@ namespace Masterduel_TLDR_overlay
         }
 
 
-        private async void StartLoop(object sender, EventArgs e) {
+        private void StartLoop(object sender, EventArgs e) {
             startButton.Enabled = false;
             stopButton.Enabled = true;
+
+            WindowHandlerInterface handler;
+            //bool mouseClicked;
             
-            var handler = new Windows.Handler();
-            bool mouseClicked;
+            try {
+                handler = new Windows.Handler("Master Duel");
+            } catch (NoWindowFoundException) {
+                Debug.WriteLine("Could not find the window. Please make sure it is open and try again.");
+                return;
+            }
+         
+            List<Bitmap> cachedSplashes = new();
 
             new Thread(() =>
             {
@@ -53,34 +58,29 @@ namespace Masterduel_TLDR_overlay
                 while (stopButton.Enabled)
                 {
                     // Get current window
-                    [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-                    static extern IntPtr GetForegroundWindow();
-                    
-                    handler.GetWinHandle(MasterduelWindow.WINDOW_NAME);
-                    
-                    if (GetForegroundWindow() == handler.WinHandle)
+
+                    if (handler.IsWindowCurrentlySelected())
                     {
-                        //mouseClicked = handler.GetLeftMousePressed();
-                        //if (mouseClicked)
+                        //if (handler.GetLeftMousePressed())
                         //{
-                            CheckCardInScreen(handler);
+                        CheckCardInScreen(handler, cachedSplashes);
                         //}
                     }
-                    Debug.WriteLine("Debug print " + handler.WinHandle);
                     Thread.Sleep(1000);
                 }
             }).Start();
         }
 
-        private async void CheckCardInScreen(WindowHandlerInterface handler)
+        private async void CheckCardInScreen(WindowHandlerInterface handler, List<Bitmap> cachedSplashes)
         {
             // Get window coordinates
-            (Point, Point) wl, newPoints;
+            (Point, Point) wl, newPoints, splash;
             try
             {
                 wl = handler.GetWindowPoints(MasterduelWindow.WINDOW_NAME);
                 newPoints = MasterduelWindow.Window.GetCardTitleCoords(wl);
-            } catch (Exception e) {
+                splash = MasterduelWindow.Window.GetCardSplashCoords(wl);
+            } catch (Exception) {
                 endText.Text = "No window was found";
                 return;
             }
@@ -88,7 +88,7 @@ namespace Masterduel_TLDR_overlay
             // Take screenshot of area
             Bitmap bm = ScreenProcessing.TakeScreenshotFromArea(newPoints.Item1, newPoints.Item2);
             pictureBox1.Image = bm;
-
+            
             //Caching (not implemented)
 
             // Run OCR on image
@@ -100,6 +100,11 @@ namespace Masterduel_TLDR_overlay
 
             try
             {
+                Bitmap splashBm = ScreenProcessing.TakeScreenshotFromArea(splash.Item1, splash.Item2);
+                if (cachedSplashes.Any((s) => ScreenProcessing.CompareImages(s, splashBm) >= 0.94))
+                {
+                    Debug.WriteLine("Splash already cached!");
+                }
                 List<CardInfo> apiRes;
                 if (reformattedCardName.Length > 10)
                 {
@@ -109,6 +114,9 @@ namespace Masterduel_TLDR_overlay
                 {
                     apiRes = await CardsAPI.GetCardByExactNameAsync(reformattedCardName);
                 }
+
+                cachedSplashes.Add(splashBm);
+
                 SummarizedData res = TextProcessing.CardText.GetDescFeatures(apiRes[0]);
                 Invoke(new Action(() =>
                 {
