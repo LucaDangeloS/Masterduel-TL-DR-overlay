@@ -1,3 +1,4 @@
+using Masterduel_TLDR_overlay.Caching;
 using System;
 
 namespace Masterduel_TLDR_overlay
@@ -12,6 +13,7 @@ namespace Masterduel_TLDR_overlay
         {
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
+            new LocalDB();
             ApplicationConfiguration.Initialize();
             Application.Run(new Form());
         }

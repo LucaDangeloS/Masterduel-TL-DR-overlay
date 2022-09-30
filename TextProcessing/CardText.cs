@@ -62,7 +62,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             Moderate,
             Aggresive
         }
-        
+
         static public SummarizedData GetDescFeatures(CardInfo card)
         {
             SummarizedData summerizedCard = new();
@@ -259,6 +259,5 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 Debug.WriteLine(word + " : " + dict[word] + "\r\n");
             }
         }
-
     }
 }

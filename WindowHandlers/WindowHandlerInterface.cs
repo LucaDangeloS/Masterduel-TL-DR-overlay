@@ -27,7 +27,6 @@ namespace Masterduel_TLDR_overlay.WindowHandlers
         public (Point, Point) GetWindowPoints(string windowName);
         public bool IsWindowCurrentlySelected();
         public bool GetLeftMousePressed();
-        public bool GetLeftMousePressed();
 
         class NoWindowFoundException : Exception
         {

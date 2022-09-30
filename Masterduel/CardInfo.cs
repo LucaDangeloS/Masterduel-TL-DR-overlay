@@ -43,11 +43,25 @@ namespace Masterduel_TLDR_overlay.Masterduel
                 }
                 public override string ToString() => $"{Type}: {EffectString}";
             }
-            public SummarizedData() { this.Effects = new(); }
+            public SummarizedData() { Effects = new(); }
             public List<Effect> Effects { get; set; }
             public void AddEffect(Effect effect) { Effects.Add(effect); }
             public void AddEffects(List<Effect> effects) { Effects.AddRange(effects); }
             public List<Effect>? GetEffects() { return Effects.Count > 0 ?  Effects : null; }
+        }
+    }
+
+    public class CardInfoDAO
+    {
+        public string SplashHash { get; set; }
+        public string[] EffectArray { get; set; }
+        public int SpashHashSum { get; set; }
+
+        public CardInfoDAO(string splashHash, string[] effectArray, int spashHashSum)
+        {
+            SplashHash = splashHash;
+            EffectArray = effectArray;
+            SpashHashSum = spashHashSum;
         }
     }
 }
