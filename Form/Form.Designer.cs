@@ -29,8 +29,9 @@
         private void InitializeComponent()
         {
             this.endText = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
+            this.startButton = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.stopButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -43,17 +44,16 @@
             this.endText.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.endText.Size = new System.Drawing.Size(363, 336);
             this.endText.TabIndex = 5;
-
             // 
-            // button2
+            // startButton
             // 
-            this.button2.Location = new System.Drawing.Point(832, 91);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 6;
-            this.button2.Text = "Analyse Image";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.convert_to_text_clickAsync);
+            this.startButton.Location = new System.Drawing.Point(691, 91);
+            this.startButton.Name = "startButton";
+            this.startButton.Size = new System.Drawing.Size(75, 23);
+            this.startButton.TabIndex = 6;
+            this.startButton.Text = "Start";
+            this.startButton.UseVisualStyleBackColor = true;
+            this.startButton.Click += new System.EventHandler(this.StartLoop);
             // 
             // pictureBox1
             // 
@@ -63,13 +63,24 @@
             this.pictureBox1.TabIndex = 7;
             this.pictureBox1.TabStop = false;
             // 
+            // stopButton
+            // 
+            this.stopButton.Location = new System.Drawing.Point(979, 91);
+            this.stopButton.Name = "stopButton";
+            this.stopButton.Size = new System.Drawing.Size(75, 23);
+            this.stopButton.TabIndex = 8;
+            this.stopButton.Text = "Stop";
+            this.stopButton.UseVisualStyleBackColor = true;
+            this.stopButton.Click += new System.EventHandler(this.StopLoop);
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1134, 583);
+            this.Controls.Add(this.stopButton);
             this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.button2);
+            this.Controls.Add(this.startButton);
             this.Controls.Add(this.endText);
             this.Name = "Form";
             this.Text = "Form1";
@@ -81,7 +92,8 @@
 
         #endregion
         private TextBox endText;
-        private Button button2;
+        private Button startButton;
         private PictureBox pictureBox1;
+        private Button stopButton;
     }
 }

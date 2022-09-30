@@ -34,7 +34,7 @@ namespace Masterduel_TLDR_overlay.Windows
 
         public IntPtr WinHandle;
 
-        private IntPtr GetWinHandle(string windowName)
+        public IntPtr GetWinHandle(string windowName)
         {
             IntPtr hWnd = IntPtr.Zero;
             foreach (Process pList in Process.GetProcesses())
@@ -60,6 +60,15 @@ namespace Masterduel_TLDR_overlay.Windows
         {
             Boundaries b = new Boundaries();
             IntPtr hWnd = GetWinHandle(windowName);
+            var res = GetWindowBoundaries(hWnd, ref b);
+            if (!res) throw new NoDimensionsFoundException();
+
+            return (new Point(b.Left, b.Top), new Point(b.Right, b.Bottom));
+        }
+
+        public (Point, Point) GetWindowPoints(IntPtr hWnd)
+        {
+            Boundaries b = new Boundaries();
             var res = GetWindowBoundaries(hWnd, ref b);
             if (!res) throw new NoDimensionsFoundException();
 
