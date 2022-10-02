@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using static Masterduel_TLDR_overlay.Api.JsonCardResponse;
 
 namespace Masterduel_TLDR_overlay.Api
 {
@@ -39,7 +40,15 @@ namespace Masterduel_TLDR_overlay.Api
             response.EnsureSuccessStatusCode();
             JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
             if (res == null) throw new NoCardsFoundException("No cards were found with name: " + cardName);
-            return res.Data;
+
+            List<CardInfo> cards = new();
+
+            foreach (JsonCardInfo jsonCard in res.Data)
+            {
+                cards.Add(CardAPIObjConverter.ConvertToCardInfo(jsonCard));
+            }
+
+            return cards;
         }
 
         public static async Task<List<CardInfo>> GetCardByExactNameAsync(string cardName)
@@ -48,15 +57,38 @@ namespace Masterduel_TLDR_overlay.Api
             HttpResponseMessage response = await client.GetAsync(exactPath);
             response.EnsureSuccessStatusCode();
             JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
+            
             if (res == null) throw new NoCardsFoundException("No cards were found with name: " + cardName);
-            return res.Data;
+
+            List<CardInfo> cards = new ();
+            
+            foreach (JsonCardInfo jsonCard in res.Data)
+            {
+                cards.Add(CardAPIObjConverter.ConvertToCardInfo(jsonCard));
+            }
+
+            return cards;
         }
     }
 
     class JsonCardResponse
     {
-        public List<CardInfo> Data { get; set; }
+        public List<JsonCardInfo> Data { get; set; }
     }
+    public class JsonCardInfo
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string Desc { get; set; }
+    }
+    class CardAPIObjConverter
+    {
+        public static CardInfo ConvertToCardInfo(JsonCardInfo res)
+        {
+            return new CardInfo(res.Name, res.Desc);
+        }
+    }
+    
     class NoCardsFoundException : Exception
     {
         public NoCardsFoundException(string message): base(message) { }

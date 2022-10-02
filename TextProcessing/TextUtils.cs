@@ -25,7 +25,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 }
                 else
                 {
-                    if (!lookup.Contains(c))
+                    if (!lookup.Contains(c) && c != '\n')
                     {
                         sb.Append(c);
                     }

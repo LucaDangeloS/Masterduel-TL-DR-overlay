@@ -46,24 +46,23 @@ namespace Masterduel_TLDR_overlay.Windows
 
             return GetForegroundWindow() == WinHandle;
         }
-        public (Point, Point) GetWindowPoints(string windowName)
+        public (Point, Point) GetWindowPoints()
         {
             Boundaries b = new Boundaries();
-            IntPtr hWnd = GetWinHandle(windowName);
-            var res = GetWindowBoundaries(hWnd, ref b);
+            var res = GetWindowBoundaries(WinHandle, ref b);
             if (!res) throw new NoDimensionsFoundException();
 
             return (new Point(b.Left, b.Top), new Point(b.Right, b.Bottom));
         }
 
-        public (Point, Point) GetWindowPoints(IntPtr hWnd)
-        {
-            Boundaries b = new Boundaries();
-            var res = GetWindowBoundaries(hWnd, ref b);
-            if (!res) throw new NoDimensionsFoundException();
+        //public (Point, Point) GetWindowPoints(IntPtr hWnd)
+        //{
+        //    Boundaries b = new Boundaries();
+        //    var res = GetWindowBoundaries(hWnd, ref b);
+        //    if (!res) throw new NoDimensionsFoundException();
 
-            return (new Point(b.Left, b.Top), new Point(b.Right, b.Bottom));
-        }
+        //    return (new Point(b.Left, b.Top), new Point(b.Right, b.Bottom));
+        //}
         
         // Private methods
         private IntPtr GetWinHandle(string windowName)

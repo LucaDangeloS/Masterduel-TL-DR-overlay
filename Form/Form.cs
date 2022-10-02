@@ -6,6 +6,8 @@ using System.Diagnostics;
 using Masterduel_TLDR_overlay.WindowHandlers;
 using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
 using static Masterduel_TLDR_overlay.WindowHandlers.WindowHandlerInterface;
+using Masterduel_TLDR_overlay.Caching;
+using Masterduel_TLDR_overlay.Windows;
 
 namespace Masterduel_TLDR_overlay
 {
@@ -41,15 +43,20 @@ namespace Masterduel_TLDR_overlay
 
             WindowHandlerInterface handler;
             //bool mouseClicked;
-            
+            //var db = new LocalDB();
+            //db.Initialize();
+
+
             try {
-                handler = new Windows.Handler("Master Duel");
+                handler = new Handler(MasterduelWindow.WINDOW_NAME);
             } catch (NoWindowFoundException) {
                 Debug.WriteLine("Could not find the window. Please make sure it is open and try again.");
                 return;
             }
-         
-            List<Bitmap> cachedSplashes = new();
+
+            MemCache cachedSplashes = new();
+            LocalDB db = new();
+            db.Initialize();
 
             new Thread(() =>
             {
@@ -63,48 +70,100 @@ namespace Masterduel_TLDR_overlay
                     {
                         //if (handler.GetLeftMousePressed())
                         //{
-                        CheckCardInScreen(handler, cachedSplashes);
+                        DoThings(handler, cachedSplashes, db);
                         //}
                     }
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                 }
             }).Start();
         }
 
-        private async void CheckCardInScreen(WindowHandlerInterface handler, List<Bitmap> cachedSplashes)
+        private async void DoThings(WindowHandlerInterface handler, MemCache cachedSplashes, LocalDB db)
         {
-            // Get window coordinates
-            (Point, Point) wl, newPoints, splash;
+            (Point, Point) windowArea;
             try
             {
-                wl = handler.GetWindowPoints(MasterduelWindow.WINDOW_NAME);
-                newPoints = MasterduelWindow.Window.GetCardTitleCoords(wl);
-                splash = MasterduelWindow.Window.GetCardSplashCoords(wl);
-            } catch (Exception) {
-                endText.Text = "No window was found";
+                windowArea = handler.GetWindowPoints();
+            }
+            catch (Exception)
+            {
+                Invoke(new Action(() => {
+                    endText.Text = "No window was found";
+                }));
                 return;
             }
+            CardInfo? cardName = await CheckCardInScreen(windowArea, cachedSplashes, db);
+            Debug.WriteLine(cardName?.ToString());
+        }
+
+        private async Task<CardInfo?> CheckCardInScreen((Point, Point) baseCoords, MemCache cachedSplashes, LocalDB db, float precision = 0.92f)
+        {
+            (Point, Point) area;
+            Bitmap bm;
+
+            // Get splash area coords
+            area = MasterduelWindow.Window.GetCardSplashCoords(baseCoords);
 
             // Take screenshot of area
-            Bitmap bm = ScreenProcessing.TakeScreenshotFromArea(newPoints.Item1, newPoints.Item2);
-            pictureBox1.Image = bm;
+            bm = ScreenProcessing.TakeScreenshotFromArea(area.Item1, area.Item2);
+            Invoke(new Action(() => {
+                // Debugging purposes
+                pictureBox1.Image = (Image)bm.Clone();
+            }));
             
-            //Caching (not implemented)
+            // See if it's cached in memory
+            if (cachedSplashes.CheckInCache(bm, precision))
+            {
+                return cachedSplashes.LastLookup;
+            }
 
+            CardInfo? card;
+            
+            // See if it's in local db
+            var size = db.SplashSize;
+            var (hash, mBrightness, mSaturation) = ScreenProcessing.GetImageMetrics(bm, size);
+            card = db.GetCard(hash, mBrightness, mSaturation, precision);
+
+            bm.Dispose();
+
+            if (card != null)
+            {
+                Debug.WriteLine("Got from teh cached!");
+                return card;
+            }
+
+            // Ultimately, Fecth the API
+            area = MasterduelWindow.Window.GetCardTitleCoords(baseCoords);
+            bm = ScreenProcessing.TakeScreenshotFromArea(area);
+            Invoke(new Action(() => {
+                pictureBox1.Image = (Image)bm.Clone();
+            }));
+            card = await CheckText(bm);
+            bm.Dispose();
+            
+            if (card != null)
+            {
+                //Cache the card in DB
+                Debug.WriteLine("Caching card: " + card.Name);
+                card.SetSplash(hash, mBrightness, mSaturation);
+                db.AddCard(card);
+            }
+            //Cache in local memory
+
+            return card;
+        }
+
+        private static async Task<CardInfo?> CheckText(Bitmap bm)
+        {
             // Run OCR on image
             OCR ocr = new();
             var Result = ocr.ReadImage(bm);
             var reformattedCardName = TextProcessing.CardText.TrimCardName(Result.Text, TextProcessing.CardText.Trim_aggressiveness.Light);
 
-            if (reformattedCardName == "") return;
+            if (reformattedCardName == "") return null;
 
             try
             {
-                Bitmap splashBm = ScreenProcessing.TakeScreenshotFromArea(splash.Item1, splash.Item2);
-                if (cachedSplashes.Any((s) => ScreenProcessing.CompareImages(s, splashBm) >= 0.94))
-                {
-                    Debug.WriteLine("Splash already cached!");
-                }
                 List<CardInfo> apiRes;
                 if (reformattedCardName.Length > 10)
                 {
@@ -115,28 +174,22 @@ namespace Masterduel_TLDR_overlay
                     apiRes = await CardsAPI.GetCardByExactNameAsync(reformattedCardName);
                 }
 
-                cachedSplashes.Add(splashBm);
-
-                SummarizedData res = TextProcessing.CardText.GetDescFeatures(apiRes[0]);
-                Invoke(new Action(() =>
-                {
-                    var effectsList = res.GetEffects();
-                    
-                    if (effectsList != null) {
-                        endText.Text = effectsList.Aggregate("", (current, effect) => current + (effect.ToString()));
-                    } else {
-                        endText.Text = "";
-                    }
-                }));
+                // TODO: Change just retrieving the first card in the api response
+                if (apiRes == null) return null;
+                CardInfo res = TextProcessing.CardText.GetDescFeatures(apiRes[0]);
+                return res;
             }
             catch (HttpRequestException excp)
             {
                 Debug.WriteLine(excp.Message);
+                Debug.WriteLine(reformattedCardName);
             }
             catch (NoCardsFoundException excp)
             {
                 Debug.WriteLine(excp.Message);
             }
+
+            return null;
         }
 
         private void StopLoop(object sender, EventArgs e)

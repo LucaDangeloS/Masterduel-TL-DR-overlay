@@ -17,8 +17,6 @@ namespace Masterduel_TLDR_overlay.Screen
         private static readonly int WIDTH_BORDER_OFFSET = 16;
         private static readonly int HEIGHT_BORDER_OFFSET = 39;
 
-        // Maybe a handle to check if the window changed? Or store last Window state to avoid recalculating too often
-
         // 16 * 39 offset for borders
         public static class Window {
             protected interface RelPos
@@ -55,39 +53,39 @@ namespace Masterduel_TLDR_overlay.Screen
                 return !(aspectRatio == ASPECT_RATIO);
             }
 
+            // public methods
             /// <summary>
             /// Returns the coordinates where the currently selected card name text field is located at the screen in "masterduel".
             /// <code></code>The coordinates take into acount the window size, resolution and the window mode.
             /// </summary>
-            /// <param name="wp">The window points coordinates. In the format <code>(Point(x1, y1), Point(x2, y2))</code> being (x1, y1) the upper-left corner 
+            /// <param name="wp">The window points coordinates. In the format <code>(Point(x1, y1), Point(x2, y2))
+            /// </code> being (x1, y1) the upper-left corner 
             /// and (x2, y2) the lower-right corner.</param>
-            /// <returns>Returns absolute the set  of points coordinates that delimit the rectangle where the name of the currently selected card text is located.</returns>
+            /// <returns>Returns absolute the set  of points coordinates that delimit the rectangle where the name 
+            /// of the currently selected card text is located.</returns>
             public static (Point, Point) GetCardTitleCoords((Point, Point) wp)
             {
-                Size size = new(Math.Abs(wp.Item2.X - wp.Item1.X), Math.Abs(wp.Item2.Y - wp.Item1.Y));
-
-                if (IsWindowed(size))
-                {
-                    size = new(Math.Abs(wp.Item2.X - wp.Item1.X) - WIDTH_BORDER_OFFSET, Math.Abs(wp.Item2.Y - wp.Item1.Y) - HEIGHT_BORDER_OFFSET);
-                    wp.Item1.X += WIDTH_BORDER_OFFSET / 2;
-                    wp.Item1.Y += HEIGHT_BORDER_OFFSET - WIDTH_BORDER_OFFSET / 2;
-                }
-                RelPos pos = new DeckEditorTextRelPos();
-                var newPoints = (new Point((int)(pos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
-                                           (int)(pos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
-                                 new Point((int)(pos.X_REL_END_POS * size.Width) + wp.Item1.X,
-                                           (int)(pos.Y_REL_END_POS * size.Height) + wp.Item1.Y));
-                return newPoints;
+                RelPos pos = new TextRelPos();
+                return GetPosCoords(wp, pos);
             }
 
             /// <summary>
             /// Returns the coordinates where the currently selected card splash art is located at the screen in "masterduel".
             /// <code></code>The coordinates take into acount the window size, resolution and the window mode.
             /// </summary>
-            /// <param name="wp">The window points coordinates. In the format <code>(Point(x1, y1), Point(x2, y2))</code> being (x1, y1) the upper-left corner 
+            /// <param name="wp">The window points coordinates. In the format <code>(Point(x1, y1), 
+            /// Point(x2, y2))</code> being (x1, y1) the upper-left corner 
             /// and (x2, y2) the lower-right corner.</param>
-            /// <returns>Returns absolute the set  of points coordinates that delimit the rectangle where the name of the currently selected card image is located.</returns>
+            /// <returns>Returns absolute the set  of points coordinates that delimit the rectangle 
+            /// where the name of the currently selected card image is located.</returns>
             public static (Point, Point) GetCardSplashCoords((Point, Point) wp)
+            {
+                RelPos pos = new SplashRelPos();
+                return GetPosCoords(wp, pos);
+            }
+
+            // private methods
+            private static (Point, Point) GetPosCoords((Point, Point) wp, RelPos pos) 
             {
                 Size size = new(Math.Abs(wp.Item2.X - wp.Item1.X), Math.Abs(wp.Item2.Y - wp.Item1.Y));
 
@@ -96,8 +94,8 @@ namespace Masterduel_TLDR_overlay.Screen
                     size = new(Math.Abs(wp.Item2.X - wp.Item1.X) - WIDTH_BORDER_OFFSET, Math.Abs(wp.Item2.Y - wp.Item1.Y) - HEIGHT_BORDER_OFFSET);
                     wp.Item1.X += WIDTH_BORDER_OFFSET / 2;
                     wp.Item1.Y += HEIGHT_BORDER_OFFSET - WIDTH_BORDER_OFFSET / 2;
-                }
-                RelPos pos = new SplashRelPos();
+                };
+                
                 var newPoints = (new Point((int)(pos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
                                            (int)(pos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
                                  new Point((int)(pos.X_REL_END_POS * size.Width) + wp.Item1.X,

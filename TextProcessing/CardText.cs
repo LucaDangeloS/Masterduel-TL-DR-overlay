@@ -14,7 +14,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Masterduel_TLDR_overlay.TextProcessing;
 using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
-using static Masterduel_TLDR_overlay.Masterduel.CardInfo.SummarizedData;
 
 namespace Masterduel_TLDR_overlay.TextProcessing
 {
@@ -35,9 +34,8 @@ namespace Masterduel_TLDR_overlay.TextProcessing
         {
             StringBuilder sb = new();
             int agr_int = (int)aggressiveness;
-
+            
             sb.Append(TextUtils.StripSpecialCharacters(name, "#='[]();|_"));
-
             string str = sb.ToString();
             int len = str.Length;
 
@@ -50,7 +48,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             if (aggressiveness == Trim_aggressiveness.Light)
             {
                 return TextUtils.StripSpecialCharacters(str[..1], ":!") + 
-                    str[1..len] + TextUtils.StripSpecialCharacters(str.Substring(len - 1, 1), ":!");
+                    str[1..(len-1)] + TextUtils.StripSpecialCharacters(str.Substring(len - 1, 1), ":!");
             }
             return str.Substring(agr_int, len - agr_int * 2);
         }
@@ -63,16 +61,16 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             Aggresive
         }
 
-        static public SummarizedData GetDescFeatures(CardInfo card)
+        static public CardInfo GetDescFeatures(CardInfo card)
         {
-            SummarizedData summerizedCard = new();
-            
             // Negations
             var (matches, rest) = TextUtils.GetMatchingSentencesFromText(card.Desc, "negate", TextExceptions.Monsters.FALSE_NEGATIONS);
             var negations = GetCardNegations(matches);
-            summerizedCard.AddEffects(negations);
+            card.AddEffects(negations);
 
-            return summerizedCard;
+            // TODO: Add the rest of effects
+
+            return card;
         }
 
         // Private methods
