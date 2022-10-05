@@ -43,6 +43,18 @@ namespace Masterduel_TLDR_overlay.Masterduel
             return card;
         }
 
+        public static List<bool> ConvertStringToSplashHash(string splashHash)
+        {
+            List<bool> ret = new();
+
+            foreach (char c in splashHash)
+            {
+                ret.Add(c == '1' ? true : false);
+            }
+
+            return ret;
+        }
+
         //public  static List<EffectDB> ConvertEffectsToEffectsDB(List<Effect> effects)
         //{
         //    List<EffectDB> ret = new();
@@ -112,16 +124,5 @@ namespace Masterduel_TLDR_overlay.Masterduel
 
         //    return finalData;
         //}
-        private static List<bool> ConvertStringToSplashHash(string splashHash)
-        {
-            List<bool> ret = new();
-            
-            foreach (char c in splashHash)
-            {
-                ret.Add(c == '1' ? true : false);
-            }
-            
-            return ret;
-        }
     }
 }

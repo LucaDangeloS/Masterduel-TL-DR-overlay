@@ -182,11 +182,14 @@ namespace Masterduel_TLDR_overlay
             catch (HttpRequestException excp)
             {
                 Debug.WriteLine(excp.Message);
-                Debug.WriteLine(reformattedCardName);
             }
             catch (NoCardsFoundException excp)
             {
                 Debug.WriteLine(excp.Message);
+            }
+            finally
+            {
+                Debug.WriteLine(reformattedCardName);
             }
 
             return null;

@@ -28,8 +28,8 @@ namespace Masterduel_TLDR_overlay.Screen
             }
             protected class TextRelPos : RelPos
             {
-                public float X_REL_INIT_POS => 0.0191f;
-                public float Y_REL_INIT_POS => 0.14f;
+                public float X_REL_INIT_POS => 0.02f;
+                public float Y_REL_INIT_POS => 0.15f;
                 public float X_REL_END_POS => 0.19f;
                 public float Y_REL_END_POS => 0.18f;
             };
@@ -50,6 +50,7 @@ namespace Masterduel_TLDR_overlay.Screen
             private static bool IsWindowed(Size size)
             {
                 var aspectRatio = (float)size.Height / size.Width;
+                Debug.WriteLine(aspectRatio);
                 return !(aspectRatio == ASPECT_RATIO);
             }
 

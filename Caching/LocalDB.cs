@@ -12,6 +12,7 @@ namespace Masterduel_TLDR_overlay.Caching
         private readonly string path = "db.sqlite3";
         private readonly string dir = "cache/";
         public readonly (int, int) SplashSize = (24, 24);
+        private readonly float PrecisionSplashQuery = 0.10f;
         private SQLiteConnection connection;
 
         // Public methods
@@ -52,7 +53,7 @@ namespace Masterduel_TLDR_overlay.Caching
         public CardInfo? GetCardBySplash(List<bool> splashHash, float precision = 0.94f)
         {
             int hashSum = splashHash.Count(x => x);
-            int maxDiff = (int)(hashSum * 0.15f);
+            int maxDiff = (int)(hashSum * PrecisionSplashQuery);
             var queryRes = connection.Query<SplashDB>("SELECT s.*, abs(SplashHashSum - ?) as sumdiff " +
                 "FROM splashes s " +
                 "WHERE sumdiff <= ? " +
@@ -131,25 +132,24 @@ namespace Masterduel_TLDR_overlay.Caching
         {
             if (splashHash.Count == 0 || splashArts == null || splashArts.Count == 0) return null;
             // TODO: Make iterate for each splash
-            CardInfo? card, bestMatch = null;
+            SplashDB? bestMatch = null;
             float max = 0.0f;
 
             foreach (SplashDB c in splashArts)
             {
-                var tmpPrec = ScreenProcessing.CompareImages(splashHash, CardDAOConverter.); // COnvert splash string to splash boolean list
+                float tmpPrec = ScreenProcessing.CompareImages(splashHash, CardDAOConverter.ConvertStringToSplashHash(c.SplashHash));
                 if (tmpPrec >= precision && tmpPrec > max)
                 {
                     max = tmpPrec;
-                    bestMatch = card;
+                    bestMatch = c;
                 }
             }
-            connection.GetChildren(c, true);
-            //CardInfo card = CardDAOConverter.ConvertToCardInfo(bestMatch);
-            //if (ScreenProcessing.CompareImages(splashHash, card.Splash.HashedSplash) >= precision)
-            //{
-            //    return card;
-            //}
-            return bestMatch;
+
+            if (bestMatch == null)
+                return null;
+
+            connection.GetChildren(bestMatch, true);
+            return CardDAOConverter.ConvertToCardInfo(bestMatch.Card);
         }
     }
 }

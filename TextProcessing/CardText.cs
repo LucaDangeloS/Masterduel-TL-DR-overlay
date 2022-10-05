@@ -89,16 +89,14 @@ namespace Masterduel_TLDR_overlay.TextProcessing
         {
             public static class Monsters
             {
-                public static string[] FALSE_NEGATIONS = { "cannot be negated" };
-                //public static string[] NEGATION2 = { "activation", "that", "opponent's", "opponent", "activated", "when" };
-                //public static string[] NON_NEGATION2 = { "special", "summon", "its", "but", "are" };
+                public static string[] FALSE_NEGATIONS = { "cannot be negated", "was negated" };
             }
 
         }
 
         private static List<Effect> GetCardNegations(List<string> matches)
         {
-            string dir = @"C:\Users\Lucad\Desktop\Cosas\masterduel-tldr-overlay\Masterduel TLDR overlay\";
+            string dir = @"C:\Users\Lucad\Desktop\Cosas\Masterduel-TL-DR-overlay-master\";
             Dictionary<string, int> QueryVec;
             List<Effect> effectsList = new();
 
