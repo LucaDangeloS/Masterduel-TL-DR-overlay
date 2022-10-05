@@ -122,13 +122,13 @@ namespace Masterduel_TLDR_overlay
             // See if it's in local db
             var size = db.SplashSize;
             var (hash, mBrightness, mSaturation) = ScreenProcessing.GetImageMetrics(bm, size);
-            card = db.GetCard(hash, mBrightness, mSaturation, precision);
+            card = db.GetCardBySplash(hash, precision);
 
             bm.Dispose();
 
             if (card != null)
             {
-                Debug.WriteLine("Got from teh cached!");
+                Debug.WriteLine("Got from the cached!");
                 return card;
             }
 
