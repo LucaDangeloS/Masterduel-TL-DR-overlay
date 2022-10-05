@@ -1,18 +1,6 @@
-﻿using Masterduel_TLDR_overlay.Api;
-using Masterduel_TLDR_overlay.Masterduel;
-using System;
-using System.Collections.Generic;
+﻿using Masterduel_TLDR_overlay.Masterduel;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
-using System.Drawing.Text;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Masterduel_TLDR_overlay.TextProcessing;
 using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
 
 namespace Masterduel_TLDR_overlay.TextProcessing
@@ -96,7 +84,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
 
         private static List<Effect> GetCardNegations(List<string> matches)
         {
-            string dir = @"C:\Users\Lucad\Desktop\Cosas\Masterduel-TL-DR-overlay-master\";
+            string dir = AppDomain.CurrentDomain.BaseDirectory;
             Dictionary<string, int> QueryVec;
             List<Effect> effectsList = new();
 
@@ -169,7 +157,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             // Rewrite
             static public void TestModel()
             {
-                string dir = @"C:\Users\Lucad\Desktop\Cosas\masterduel-tldr-overlay\Masterduel TLDR overlay\";
+                string dir = AppDomain.CurrentDomain.BaseDirectory;
 
                 var FalseVec = new Dictionary<string, int>();
                 var TrueVec = new Dictionary<string, int>();

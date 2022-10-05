@@ -12,7 +12,6 @@ namespace Masterduel_TLDR_overlay.Masterduel
         {
             string convertedSplashHash = card.Splash.HashedSplash.Aggregate("", (prev, next) => prev + (next ? "1" : "0"));
             int splashHashSum = card.Splash.HashedSplash.Count(x => x);
-            List<EffectDB> effectsArray = ConvertEffectsToArray(card);
             // Add the card name and description later
             SplashDB splash = new()
             {
@@ -24,7 +23,7 @@ namespace Masterduel_TLDR_overlay.Masterduel
             CardInfoDB dbCard = new()
             {
                 Name = card.Name,
-                Effects = effectsArray,
+                Effects = ConvertEffectsToDB(card.Effects),
                 Splash = new List<SplashDB>() { splash }
             };
 
@@ -49,33 +48,18 @@ namespace Masterduel_TLDR_overlay.Masterduel
 
             foreach (char c in splashHash)
             {
-                ret.Add(c == '1' ? true : false);
+                ret.Add(c == '1');
             }
 
             return ret;
         }
 
-        //public  static List<EffectDB> ConvertEffectsToEffectsDB(List<Effect> effects)
-        //{
-        //    List<EffectDB> ret = new();
-
-        //    foreach (Effect e in effects)
-        //    {
-        //        var effectDB = new EffectDB();
-        //        effectDB.EffectType = e.Type.ToString();
-        //        effectDB.EffectText = e.EffectString;
-        //        ret.Add(effectDB);
-        //    }
-
-        //    return ret;
-        //}
-
         // Private methods
-        private static List<EffectDB> ConvertEffectsToArray(CardInfo card)
+        private static List<EffectDB> ConvertEffectsToDB(List<Effect> effects)
         {
             List<EffectDB> ret = new();
             
-            foreach (Effect effect in card.Effects)
+            foreach (Effect effect in effects)
             {
                 var effectDB = new EffectDB();
                 effectDB.EffectType = effect.Type.ToString();
@@ -85,20 +69,6 @@ namespace Masterduel_TLDR_overlay.Masterduel
 
             return ret;
         }
-        //private static string[] ConvertEffectsToArray(CardInfo card)
-        //{
-        //    string[] ret = new string[card.Effects.Count * 2];
-        //    int i = 0;
-
-        //    foreach (Effect effect in card.Effects)
-        //    {
-        //        ret[i] = effect.Type.ToString();
-        //        ret[i + 1] = effect.EffectString;
-        //        i++;
-        //    }
-
-        //    return ret;
-        //}
         private static List<Effect> ConvertEffectsFromDB(List<EffectDB> effects)
         {
             List<Effect> finalData = new();
@@ -111,18 +81,5 @@ namespace Masterduel_TLDR_overlay.Masterduel
 
             return finalData;
         }
-        //private static List<Effect> ConvertEffectsFromString(string[] effects)
-        //{
-        //    List<Effect> finalData = new();
-        //    int len = effects.Length;
-
-        //    for (int i = 0; i < len; i++)
-        //    {
-        //        Enum.TryParse<Effect.EffectType>(effects[i], out Effect.EffectType type);
-        //        finalData.Add(new Effect(type, effects[i + 1]));
-        //    }
-
-        //    return finalData;
-        //}
     }
 }

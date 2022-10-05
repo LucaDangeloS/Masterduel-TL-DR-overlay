@@ -61,22 +61,23 @@ namespace Masterduel_TLDR_overlay.Caching
                 hashSum, maxDiff);
 
             return GetBestMatchingResult(splashHash, queryRes, precision);
-        } // TODO: Fix Bug
-        public CardInfo? GetCard(List<bool> splashHash, float mBrightness, float mSaturation, float precision = 0.94f)
-        {
-            int hashSum = splashHash.Count(x => x);
-            int maxDiff = (int) (hashSum * 0.20f);
-            var queryRes = connection.Query<CardInfoDB>("SELECT c.*, abs(SplashHashSum - ?) as sumdiff " +
-                "FROM cards c " +
-                "JOIN splashes s ON c.Id=s.CardId " +
-                "WHERE sumdiff <= ? " +
-                "ORDER BY sumdiff ASC",
-                hashSum, maxDiff);
-            //TODO: Do something regarding the saturation and brightness
-
-            //return GetBestMatchingResult(splashHash, queryRes, precision);
-            return null;
         }
+        
+        public CardInfo? GetCardByName(string name)
+        {
+            var queryRes = connection.Query<CardInfoDB>("SELECT c.* " +
+                "FROM cards c " +
+                "WHERE c.Name = ? ",
+                name);
+            if (queryRes == null || queryRes.Count == 0)
+                return null;
+            
+            CardInfoDB bestMatch = queryRes[0];
+            connection.GetChildren(bestMatch);
+
+            return CardDAOConverter.ConvertToCardInfo(bestMatch);
+        }
+        
         /// <summary>
         /// Retrieves the cards with the best match on their splash.
         /// </summary>

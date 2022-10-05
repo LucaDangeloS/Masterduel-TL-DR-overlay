@@ -8,6 +8,7 @@ using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
 using static Masterduel_TLDR_overlay.WindowHandlers.WindowHandlerInterface;
 using Masterduel_TLDR_overlay.Caching;
 using Masterduel_TLDR_overlay.Windows;
+using System.Security.Policy;
 
 namespace Masterduel_TLDR_overlay
 {
@@ -133,12 +134,21 @@ namespace Masterduel_TLDR_overlay
             }
 
             // Ultimately, Fecth the API
+
+            // Check if card image is still the same
+            // TODO: First Take screenshot of text, then from the splash, and then compare the splashes.
+            // If the splashes don't match, drop. If the text isn't recognized, repeat the last 2 steps X times.
+            // If it fails X or more times, add it as a semi-permanent entry on cache indicating it not to do further checking.
+            if (!CheckSplashCardTextValidity(area, size, hash, precision)) return null;
+            
+            // Fetch the API
             area = MasterduelWindow.Window.GetCardTitleCoords(baseCoords);
             bm = ScreenProcessing.TakeScreenshotFromArea(area);
             Invoke(new Action(() => {
                 pictureBox1.Image = (Image)bm.Clone();
             }));
             card = await CheckText(bm);
+
             bm.Dispose();
             
             if (card != null)
@@ -151,6 +161,17 @@ namespace Masterduel_TLDR_overlay
             //Cache in local memory
 
             return card;
+        }
+
+        private static bool CheckSplashCardTextValidity((Point, Point) area, (int, int) size, List<bool> hash, float precision)
+        {
+            Bitmap bm2 = ScreenProcessing.TakeScreenshotFromArea(area.Item1, area.Item2);
+            if (ScreenProcessing.CompareImages(ScreenProcessing.GetImageHash(bm2, size), hash) < precision)
+            {
+                return false;
+            }
+            bm2.Dispose();
+            return true;
         }
 
         private static async Task<CardInfo?> CheckText(Bitmap bm)

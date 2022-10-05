@@ -37,17 +37,17 @@
             // 
             // endText
             // 
-            this.endText.Location = new System.Drawing.Point(691, 149);
+            this.endText.Location = new System.Drawing.Point(386, 59);
             this.endText.Multiline = true;
             this.endText.Name = "endText";
             this.endText.ReadOnly = true;
             this.endText.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.endText.Size = new System.Drawing.Size(363, 336);
+            this.endText.Size = new System.Drawing.Size(221, 144);
             this.endText.TabIndex = 5;
             // 
             // startButton
             // 
-            this.startButton.Location = new System.Drawing.Point(691, 91);
+            this.startButton.Location = new System.Drawing.Point(284, 59);
             this.startButton.Name = "startButton";
             this.startButton.Size = new System.Drawing.Size(75, 23);
             this.startButton.TabIndex = 6;
@@ -57,15 +57,15 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(58, 91);
+            this.pictureBox1.Location = new System.Drawing.Point(62, 59);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(536, 422);
+            this.pictureBox1.Size = new System.Drawing.Size(190, 144);
             this.pictureBox1.TabIndex = 7;
             this.pictureBox1.TabStop = false;
             // 
             // stopButton
             // 
-            this.stopButton.Location = new System.Drawing.Point(979, 91);
+            this.stopButton.Location = new System.Drawing.Point(284, 180);
             this.stopButton.Name = "stopButton";
             this.stopButton.Size = new System.Drawing.Size(75, 23);
             this.stopButton.TabIndex = 8;
@@ -77,7 +77,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1134, 583);
+            this.ClientSize = new System.Drawing.Size(681, 266);
             this.Controls.Add(this.stopButton);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.startButton);

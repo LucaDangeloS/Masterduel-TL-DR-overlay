@@ -16,7 +16,7 @@ namespace Masterduel_TLDR_overlay.Screen
         private static readonly float ASPECT_RATIO = 0.5625f;
         private static int WIDTH_BORDER_OFFSET = 16;
         private static int HEIGHT_BORDER_OFFSET = 39;
-        private static readonly int[] WIDTHS_GDC = { 1260, 1366 };
+        private static readonly int[] WIDTHS_GDC = { 160, 1366 };
         private static readonly int[] HEIGHT_GDC = { 90, 768 };
         private static readonly int MAX_WIN_MODULUS = 60;
         // 16 * 39 offset for borders
