@@ -14,9 +14,11 @@ namespace Masterduel_TLDR_overlay.Screen
     {
         public static readonly string WINDOW_NAME = "masterduel";
         private static readonly float ASPECT_RATIO = 0.5625f;
-        private static readonly int WIDTH_BORDER_OFFSET = 16;
-        private static readonly int HEIGHT_BORDER_OFFSET = 39;
-
+        private static int WIDTH_BORDER_OFFSET = 16;
+        private static int HEIGHT_BORDER_OFFSET = 39;
+        private static readonly int[] WIDTHS_GDC = { 1260, 1366 };
+        private static readonly int[] HEIGHT_GDC = { 90, 768 };
+        private static readonly int MAX_WIN_MODULUS = 60;
         // 16 * 39 offset for borders
         public static class Window {
             protected interface RelPos
@@ -25,11 +27,11 @@ namespace Masterduel_TLDR_overlay.Screen
                 public float Y_REL_INIT_POS { get; }
                 public float X_REL_END_POS { get; }
                 public float Y_REL_END_POS { get; }
-            }
+            };
             protected class TextRelPos : RelPos
             {
-                public float X_REL_INIT_POS => 0.02f;
-                public float Y_REL_INIT_POS => 0.15f;
+                public float X_REL_INIT_POS => 0.0191f;
+                public float Y_REL_INIT_POS => 0.14f;
                 public float X_REL_END_POS => 0.19f;
                 public float Y_REL_END_POS => 0.18f;
             };
@@ -50,8 +52,24 @@ namespace Masterduel_TLDR_overlay.Screen
             private static bool IsWindowed(Size size)
             {
                 var aspectRatio = (float)size.Height / size.Width;
-                Debug.WriteLine(aspectRatio);
-                return !(aspectRatio == ASPECT_RATIO);
+                bool ratioed = !(aspectRatio == ASPECT_RATIO);
+                
+                if (ratioed)
+                {
+                    Debug.WriteLine(aspectRatio);
+                    Debug.WriteLine(size.Width + " x " + size.Height);
+                    
+                    for (int i = 0; i < WIDTHS_GDC.Length; i++)
+                    {
+                        WIDTH_BORDER_OFFSET = size.Width % WIDTHS_GDC[i];
+                        HEIGHT_BORDER_OFFSET = size.Height % HEIGHT_GDC[i];
+                        
+                        if (WIDTH_BORDER_OFFSET < MAX_WIN_MODULUS
+                            && HEIGHT_BORDER_OFFSET < MAX_WIN_MODULUS) break;
+                            
+                    }
+                }
+                return ratioed;
             }
 
             // public methods
