@@ -138,7 +138,7 @@ namespace Masterduel_TLDR_overlay.Caching
 
             foreach (SplashDB c in splashArts)
             {
-                float tmpPrec = ScreenProcessing.CompareImages(splashHash, CardDAOConverter.ConvertStringToSplashHash(c.SplashHash));
+                float tmpPrec = Screen.ImageProcessing.CompareImages(splashHash, CardDAOConverter.ConvertStringToSplashHash(c.SplashHash));
                 if (tmpPrec >= precision && tmpPrec > max)
                 {
                     max = tmpPrec;

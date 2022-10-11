@@ -33,7 +33,14 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             }
             return sb.ToString();
         }
-
+        
+        /// <summary>
+        /// This method is case insensitive.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="word"></param>
+        /// <param name="blackList"></param>
+        /// <returns></returns>
         public static (List<string> matches, string rest) GetMatchingSentencesFromText(string str, string word, string[]? blackList)
         {
             List<string> ListOfTermVectors = new();
@@ -46,18 +53,25 @@ namespace Masterduel_TLDR_overlay.TextProcessing
 
             return (ListOfTermVectors, rest);
         }
-
+        
+        /// <summary>
+        /// This method is case sensitive.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="word"></param>
+        /// <param name="blackList"></param>
+        /// <returns></returns>
         public static (string[] matchedString, string rest) GetSubStringsCointainingWord(string text, string word, string[]? blackList)
         {
-            string[] rest = new string[0];
-            string[] results = new string[0];
+            string[] rest = Array.Empty<string>();
+            string[] results = Array.Empty<string>();
             // TODO: change 
             foreach (string sentence in text.Split('.'))
-            {
-                if (sentence.ToLower().Contains(word) && (blackList == null || !blackList.Any(sentence.ToLower().Contains)))
+            {                
+                if (sentence.Contains(word) && (blackList == null || !blackList.Any(sentence.Contains)))
                 {
                     Array.Resize(ref results, results.Length + 1);
-                    results[results.Length - 1] = sentence;
+                    results[^1] = sentence;
                 }
                 else
                 {

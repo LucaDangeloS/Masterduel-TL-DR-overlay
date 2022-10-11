@@ -66,11 +66,12 @@ namespace Masterduel_TLDR_overlay.Masterduel
             public enum EffectType
             {
                 NEGATION,
-                DESTRUCTION,
+                QUICK_EFFECT,
+                UNTARGETABLE,
+                INMUNITY,
                 BANISH,
-                ON_DEATH,
-                UNTARGETEABLE,
-                INMUNITY
+                DESTRUCTION,
+                ON_DEATH
             }
             public EffectType Type { get; set; }
             public string EffectString;
@@ -79,7 +80,7 @@ namespace Masterduel_TLDR_overlay.Masterduel
                 Type = type;
                 EffectString = effectString;
             }
-            public override string ToString() => $"{Type}: {EffectString}";
+            public override string ToString() => $"{Type}:\r\n {EffectString}"; // TODO: Capitalize
         }
     }
 

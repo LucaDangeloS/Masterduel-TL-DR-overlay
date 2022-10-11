@@ -52,7 +52,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
         static public CardInfo GetDescFeatures(CardInfo card)
         {
             // Negations
-            var (matches, rest) = TextUtils.GetMatchingSentencesFromText(card.Desc, "negate", TextExceptions.Monsters.FALSE_NEGATIONS);
+            var (matches, rest) = TextUtils.GetMatchingSentencesFromText(card.Desc, "negate", TextRules.FALSE_NEGATIONS);
             var negations = GetCardNegations(matches);
             card.AddEffects(negations);
 
@@ -72,14 +72,26 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                     dict[word] = 1;
             }
         }
-        
-        private class TextExceptions
-        {
-            public static class Monsters
-            {
-                public static string[] FALSE_NEGATIONS = { "cannot be negated", "was negated" };
-            }
 
+        private class TextRules
+        {
+            public static string[] FALSE_NEGATIONS = { "cannot be negated", "was negated" };
+
+            public static string[] TRUE_IMMUNITIES =
+            {
+                "immune to",
+                "unaffected by",
+                "cannot be affected by",
+                "cannot be destroyed",
+                "cannot target",
+                "cannot be targeted"
+            };
+            public static string[] TRUE_QUICK_EFFECTS =
+            {
+                "quick effect",
+                "during your opponent",
+                "during either player"
+            };
         }
 
         private static List<Effect> GetCardNegations(List<string> matches)
@@ -101,7 +113,6 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 QueryVec = GetTermVector(sentence);
                 var trueCoeff = Similarity.CosineSimilarity(QueryVec, TrueVec);
                 var falseCoeff = Similarity.CosineSimilarity(QueryVec, FalseVec);
-                Debug.WriteLine($"{trueCoeff} {falseCoeff}");
 
                 if (trueCoeff > falseCoeff)
                 {
@@ -183,7 +194,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                     Debug.WriteLine(b1);
                     Debug.Write("False Negation score: ");
                     var b2 = CosineSimilarity(QueryVec, FalseVec);
-                    if (cardText.Contains(TextExceptions.Monsters.FALSE_NEGATIONS[0]))
+                    if (cardText.Contains(TextRules.FALSE_NEGATIONS[0]))
                     {
                         testFileTarget.Add(false);
                     }

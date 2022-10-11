@@ -106,7 +106,7 @@ namespace Masterduel_TLDR_overlay
             area = MasterduelWindow.Window.GetCardSplashCoords(baseCoords);
 
             // Take screenshot of area
-            bm = ScreenProcessing.TakeScreenshotFromArea(area.Item1, area.Item2);
+            bm = Screen.ImageProcessing.TakeScreenshotFromArea(area.Item1, area.Item2);
             Invoke(new Action(() => {
                 // Debugging purposes
                 pictureBox1.Image = (Image)bm.Clone();
@@ -122,7 +122,7 @@ namespace Masterduel_TLDR_overlay
             
             // See if it's in local db
             var size = db.SplashSize;
-            var (hash, mBrightness, mSaturation) = ScreenProcessing.GetImageMetrics(bm, size);
+            var (hash, mBrightness, mSaturation) = Screen.ImageProcessing.GetImageMetrics(bm, size);
             card = db.GetCardBySplash(hash, precision);
 
             bm.Dispose();
@@ -143,7 +143,7 @@ namespace Masterduel_TLDR_overlay
             
             // Fetch the API
             area = MasterduelWindow.Window.GetCardTitleCoords(baseCoords);
-            bm = ScreenProcessing.TakeScreenshotFromArea(area);
+            bm = Screen.ImageProcessing.TakeScreenshotFromArea(area);
             Invoke(new Action(() => {
                 pictureBox1.Image = (Image)bm.Clone();
             }));
@@ -165,8 +165,8 @@ namespace Masterduel_TLDR_overlay
 
         private static bool CheckSplashCardTextValidity((Point, Point) area, (int, int) size, List<bool> hash, float precision)
         {
-            Bitmap bm2 = ScreenProcessing.TakeScreenshotFromArea(area.Item1, area.Item2);
-            if (ScreenProcessing.CompareImages(ScreenProcessing.GetImageHash(bm2, size), hash) < precision)
+            Bitmap bm2 = Screen.ImageProcessing.TakeScreenshotFromArea(area.Item1, area.Item2);
+            if (Screen.ImageProcessing.CompareImages(Screen.ImageProcessing.GetImageHash(bm2, size), hash) < precision)
             {
                 return false;
             }

@@ -1,6 +1,6 @@
 ﻿- Banish
 
-- Destroy
+- Destroy (that)
 
 -  (When) Leaves the field / sent to the graveyard/(GY)
 
@@ -10,6 +10,9 @@
 
 - Gain(s) // ATK/DEF
 
+- Immune to // Unaffected by // Cannot be affected by // Cannot be destroyed // cannot target // cannot be targeted
+
+- (Other effects): Your opponent [!cannot activate]
 
 1. when -> (Quick Effect) -> negate
 2. GY -> ; -> banish -> ; -> negate (monster)

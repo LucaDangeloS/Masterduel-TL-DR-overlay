@@ -7,7 +7,7 @@ namespace Masterduel_TLDR_overlay.Screen
     /// <summary>
     ///    This is a sttatic class.
     /// </summary>
-    internal static class ScreenProcessing
+    internal static class ImageProcessing
     {
         // Public methods
         
@@ -44,7 +44,6 @@ namespace Masterduel_TLDR_overlay.Screen
             var size = (24, 24);
             List<bool> iHash1 = GetImageHash(bm1, size);
             List<bool> iHash2 = GetImageHash(bm2, size);
-            // Debug.WriteLine(iHash1.Count * sizeof(bool));
 
             //determine the number of equal pixel (x of 256)
             int equalElements = iHash1.Zip(iHash2, (i, j) => i == j).Count(eq => eq);

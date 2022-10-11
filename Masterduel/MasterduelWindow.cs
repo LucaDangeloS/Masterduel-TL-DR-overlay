@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Masterduel_TLDR_overlay.Screen
+namespace Masterduel_TLDR_overlay.Masterduel
 {
     /// <summary>
     ///    This is a sttatic class.
@@ -20,7 +20,8 @@ namespace Masterduel_TLDR_overlay.Screen
         private static readonly int[] HEIGHT_GDC = { 90, 768 };
         private static readonly int MAX_WIN_MODULUS = 60;
         // 16 * 39 offset for borders
-        public static class Window {
+        public static class Window
+        {
             protected interface RelPos
             {
                 public float X_REL_INIT_POS { get; }
@@ -53,20 +54,17 @@ namespace Masterduel_TLDR_overlay.Screen
             {
                 var aspectRatio = (float)size.Height / size.Width;
                 bool ratioed = !(aspectRatio == ASPECT_RATIO);
-                
+
                 if (ratioed)
                 {
-                    Debug.WriteLine(aspectRatio);
-                    Debug.WriteLine(size.Width + " x " + size.Height);
-                    
                     for (int i = 0; i < WIDTHS_GDC.Length; i++)
                     {
                         WIDTH_BORDER_OFFSET = size.Width % WIDTHS_GDC[i];
                         HEIGHT_BORDER_OFFSET = size.Height % HEIGHT_GDC[i];
-                        
+
                         if (WIDTH_BORDER_OFFSET < MAX_WIN_MODULUS
                             && HEIGHT_BORDER_OFFSET < MAX_WIN_MODULUS) break;
-                            
+
                     }
                 }
                 return ratioed;
@@ -104,7 +102,7 @@ namespace Masterduel_TLDR_overlay.Screen
             }
 
             // private methods
-            private static (Point, Point) GetPosCoords((Point, Point) wp, RelPos pos) 
+            private static (Point, Point) GetPosCoords((Point, Point) wp, RelPos pos)
             {
                 Size size = new(Math.Abs(wp.Item2.X - wp.Item1.X), Math.Abs(wp.Item2.Y - wp.Item1.Y));
 
@@ -114,7 +112,7 @@ namespace Masterduel_TLDR_overlay.Screen
                     wp.Item1.X += WIDTH_BORDER_OFFSET / 2;
                     wp.Item1.Y += HEIGHT_BORDER_OFFSET - WIDTH_BORDER_OFFSET / 2;
                 };
-                
+
                 var newPoints = (new Point((int)(pos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
                                            (int)(pos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
                                  new Point((int)(pos.X_REL_END_POS * size.Width) + wp.Item1.X,
