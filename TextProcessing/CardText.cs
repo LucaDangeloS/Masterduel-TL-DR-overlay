@@ -222,7 +222,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                     {
                         compVec.Add(Boolean.Parse(temp));
                     }
-                    catch (FormatException e)
+                    catch (FormatException)
                     {
                         throw new Exception("Test file format not valid. First word in each line must be either 'true' or 'false'");
                     }

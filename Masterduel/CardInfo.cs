@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
 
 namespace Masterduel_TLDR_overlay.Masterduel
 {
@@ -14,9 +15,7 @@ namespace Masterduel_TLDR_overlay.Masterduel
         public string Desc { get; set; }
         public struct SplashInfo
         {
-            public List<bool> HashedSplash { get; set; }
-            public float MeanBrightness { get; set; }
-            public float MeanSaturation { get; set; }
+            public ImageHash HashedSplash;
         }
         public SplashInfo Splash;
         
@@ -25,23 +24,14 @@ namespace Masterduel_TLDR_overlay.Masterduel
         {
             Name = "";
             Desc = "";
-            Splash.HashedSplash = new List<bool>();
+            Splash.HashedSplash = new ImageHash();
             Effects = new();
         }
         public CardInfo(string name, string desc)
         {
             Name = name;
             Desc = desc;
-            Splash.HashedSplash = new List<bool>();
-            Effects = new();
-        }
-        public CardInfo(string name, string desc, float meanBrightness, float meanSaturation)
-        {
-            Name = name;
-            Desc = desc;
-            Splash.HashedSplash = new List<bool>();
-            Splash.MeanBrightness = meanBrightness;
-            Splash.MeanSaturation = meanSaturation;
+            Splash.HashedSplash = new ImageHash();
             Effects = new();
         }
         // Public methods
@@ -53,11 +43,9 @@ namespace Masterduel_TLDR_overlay.Masterduel
         public List<Effect> Effects { get; set; }
         public void AddEffect(Effect effect) { Effects.Add(effect); }
         public void AddEffects(List<Effect> effects) { Effects.AddRange(effects); }
-        public void SetSplash(List<bool> hashedSplash, float meanBrightness, float meanSaturation)
+        public void SetSplash(ImageHash hashedSplash)
         {
             Splash.HashedSplash = hashedSplash;
-            Splash.MeanBrightness = meanBrightness;
-            Splash.MeanSaturation = meanSaturation;
         }
         public List<Effect>? GetEffects() { return Effects.Count > 0 ? Effects : null; }
 

@@ -22,7 +22,7 @@ namespace Masterduel_TLDR_overlay.Masterduel
         // 16 * 39 offset for borders
         public static class Window
         {
-            protected interface RelPos
+            public interface RelPos
             {
                 public float X_REL_INIT_POS { get; }
                 public float Y_REL_INIT_POS { get; }
@@ -50,6 +50,7 @@ namespace Masterduel_TLDR_overlay.Masterduel
                 public float X_REL_END_POS => 0.0922f;
                 public float Y_REL_END_POS => 0.3546f;
             };
+            
             private static bool IsWindowed(Size size)
             {
                 var aspectRatio = (float)size.Height / size.Width;

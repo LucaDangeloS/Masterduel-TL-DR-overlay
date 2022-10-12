@@ -4,27 +4,31 @@ using SQLite;
 using SQLiteNetExtensions.Extensions;
 using System.Diagnostics;
 using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
+using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
 
 namespace Masterduel_TLDR_overlay.Caching
 {
     internal class LocalDB
     {
+        private readonly PropertiesLoader prop = PropertiesLoader.Instance;
         private readonly string path = "db.sqlite3";
         private readonly string dir = "cache/";
-        public readonly (int, int) SplashSize = (24, 24);
-        private readonly float PrecisionSplashQuery = 0.10f;
-        private SQLiteConnection connection;
+        public readonly (int, int) SplashSize;
+        private readonly SQLiteConnection Connection;
 
         // Public methods
         public LocalDB()
         {
+            SplashSize = (prop.Properties.SPLASH_SIZE, prop.Properties.SPLASH_SIZE);
             CreateDbFolder();
-            connection = new SQLiteConnection($"{dir}{path}");
+            Connection = new SQLiteConnection($"{dir}{path}");
         }
+        
         public void Initialize()
         {
-            CreateTables();        
+            CreateTables();
         }
+
         public void AddCard(CardInfo card)
         {
             CardInfoDB? cardObject = SearchForCard(card.Name);
@@ -32,15 +36,11 @@ namespace Masterduel_TLDR_overlay.Caching
             if (cardObject != null)
             {
                 // Fix bug, all splashes added are the same
-                var tmp = CardDAOConverter.ConvertToDbCardInfo(card);
-                SetCardIds(ref tmp, cardObject.Id);
-                var tmpSplash = tmp.Splash.First();
-                tmpSplash.Card = cardObject;
-                AddSplash(tmpSplash);
+                AddSplashToCard(card, cardObject);
                 return;
             }
             cardObject = CardDAOConverter.ConvertToDbCardInfo(card);
-            connection.InsertWithChildren(cardObject);
+            Connection.InsertWithChildren(cardObject);
         }
 
         /// <summary>
@@ -50,11 +50,11 @@ namespace Masterduel_TLDR_overlay.Caching
         /// <param name="precison">Number from 0 to 1 indicating the precision.</param>
         /// <returns>Returns the cards with the best match with the minimum level of precision.
         /// Returns null if no cards meet the minimum similarity level.</returns>
-        public CardInfo? GetCardBySplash(List<bool> splashHash, float precision = 0.94f)
+        public CardInfo? GetCardBySplash(ImageHash splashHash, float precision)
         {
-            int hashSum = splashHash.Count(x => x);
-            int maxDiff = (int)(hashSum * PrecisionSplashQuery);
-            var queryRes = connection.Query<SplashDB>("SELECT s.*, abs(SplashHashSum - ?) as sumdiff " +
+            int hashSum = splashHash.HashSum;
+            int maxDiff = prop.Properties.MAX_PIXELS_DIFF;
+            var queryRes = Connection.Query<SplashDB>("SELECT s.*, abs(SplashHashSum - ?) as sumdiff " +
                 "FROM splashes s " +
                 "WHERE sumdiff <= ? " +
                 "ORDER BY sumdiff ASC",
@@ -65,15 +65,15 @@ namespace Masterduel_TLDR_overlay.Caching
         
         public CardInfo? GetCardByName(string name)
         {
-            var queryRes = connection.Query<CardInfoDB>("SELECT c.* " +
+            var queryRes = Connection.Query<CardInfoDB>("SELECT c.* " +
                 "FROM cards c " +
                 "WHERE c.Name = ? ",
                 name);
             if (queryRes == null || queryRes.Count == 0)
                 return null;
             
-            CardInfoDB bestMatch = queryRes[0];
-            connection.GetChildren(bestMatch);
+            CardInfoDB bestMatch = queryRes.First();
+            Connection.GetChildren(bestMatch);
 
             return CardDAOConverter.ConvertToCardInfo(bestMatch);
         }
@@ -85,7 +85,7 @@ namespace Masterduel_TLDR_overlay.Caching
         /// <param name="precison">Number from 0 to 1 indicating the precision.</param>
         /// <returns>Returns the cards that match the hash by the precision specified, 
         /// ordered in descending order of similarity.</returns>
-        public List<CardInfo> GetCards(List<bool> splashHash, float precison = 0.94f)
+        public List<CardInfo> GetCards(ImageHash splashHash, float precision)
         {
             List<CardInfo> matchedCards = new();
             //Implement
@@ -93,10 +93,19 @@ namespace Masterduel_TLDR_overlay.Caching
         }
 
         // Private methods
-        private void AddSplash(SplashDB splash)
+        private void AddSplashToCard(CardInfo card, CardInfoDB cardObject)
         {
-            connection.InsertWithChildren(splash);
+            var tmp = CardDAOConverter.ConvertToDbCardInfo(card);
+            var cardId = cardObject.Id;
+            var tmpSplash = tmp.Splash.First();
+
+            cardObject.Splash.ForEach((x) => x.CardId = cardId);
+            cardObject.Effects.ForEach((x) => x.CardId = cardId);
+
+            tmpSplash.Card = cardObject;
+            Connection.InsertWithChildren(tmpSplash);
         }
+        
         private void CreateDbFolder()
         {
             if (!Directory.Exists(dir))
@@ -104,41 +113,41 @@ namespace Masterduel_TLDR_overlay.Caching
                 Directory.CreateDirectory(dir);
             }
         }
-        private void SetCardIds(ref CardInfoDB card, int cardId)
-        {
-            card.Splash.ForEach((x) => x.CardId = cardId);
-            card.Effects.ForEach((x) => x.CardId = cardId);
-        }
+        
         private CardInfoDB? SearchForCard(string cardName)
         {
-            List<CardInfoDB> cards = connection.Query<CardInfoDB>(
+            List<CardInfoDB> cards = Connection.Query<CardInfoDB>(
                 "SELECT * " +
                 "FROM cards c " +
                 "WHERE c.Name = ?", cardName);
 
             if (cards.Count == 0) return null;
 
-            CardInfoDB? matchedCard = cards.First();
-            connection.GetChildren(matchedCard, true);
-
+            CardInfoDB? matchedCard = cards.FirstOrDefault();
+            if (matchedCard != null)
+            {
+                Connection.GetChildren(matchedCard, true);
+            }
             return matchedCard;
         }
+        
         private void CreateTables()
         {
-            connection.CreateTable<CardInfoDB>();
-            connection.CreateTable<EffectDB>();
-            connection.CreateTable<SplashDB>();
+            Connection.CreateTable<CardInfoDB>();
+            Connection.CreateTable<EffectDB>();
+            Connection.CreateTable<SplashDB>();
         }
-        private CardInfo? GetBestMatchingResult(List<bool> splashHash, List<SplashDB> splashArts, float precision)
+        
+        private CardInfo? GetBestMatchingResult(ImageHash splashHash, List<SplashDB> splashArts, float precision)
         {
-            if (splashHash.Count == 0 || splashArts == null || splashArts.Count == 0) return null;
+            if (splashHash.HashSum == 0 || splashArts == null || splashArts.Count == 0) return null;
             // TODO: Make iterate for each splash
             SplashDB? bestMatch = null;
             float max = 0.0f;
 
             foreach (SplashDB c in splashArts)
             {
-                float tmpPrec = Screen.ImageProcessing.CompareImages(splashHash, CardDAOConverter.ConvertStringToSplashHash(c.SplashHash));
+                float tmpPrec = splashHash.CompareTo(CardDAOConverter.ConvertStringToSplashHash(c.SplashHash));
                 if (tmpPrec >= precision && tmpPrec > max)
                 {
                     max = tmpPrec;
@@ -149,7 +158,7 @@ namespace Masterduel_TLDR_overlay.Caching
             if (bestMatch == null)
                 return null;
 
-            connection.GetChildren(bestMatch, true);
+            Connection.GetChildren(bestMatch, true);
             return CardDAOConverter.ConvertToCardInfo(bestMatch.Card);
         }
     }

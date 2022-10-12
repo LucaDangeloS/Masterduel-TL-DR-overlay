@@ -1,13 +1,17 @@
 ﻿using System.Diagnostics;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.X86;
+using System.Security.Policy;
+using System.Windows.Forms;
 
 namespace Masterduel_TLDR_overlay.Screen
 {
     /// <summary>
     ///    This is a sttatic class.
     /// </summary>
-    internal static class ImageProcessing
+    public static class ImageProcessing
     {
         // Public methods
         
@@ -62,44 +66,6 @@ namespace Masterduel_TLDR_overlay.Screen
             return (float) equalElements / (size.Item1 * size.Item2);
         }
 
-        /// <summary>
-        /// Creates a hash list from an image bitmap to make comparison efficient. The underlying metric used is a greyscale normalization function.
-        /// </summary>
-        /// <param name="bm1">The image Bitmap.</param>
-        /// <param name="size">Dimensions of the image hash.</param>
-        /// <returns>A <see cref="List"/> of <see cref="bool"/> values representing the hashmap.</returns>
-        public static List<bool> GetImageHash(Bitmap bm, (int width, int height) size)
-        {
-            int bytesPerPixel = 4; //Format32bppArgb
-            int maxPointerLenght = size.width * size.height * bytesPerPixel;
-            int stride = size.width * bytesPerPixel;
-            var bytes = new byte[size.height * stride];
-            byte R, G, B, A;
-
-            List<bool> lResult = new();
-            Bitmap bmpMin = new(bm, new Size(size.width, size.height));
-
-            BitmapData bData = bmpMin.LockBits(
-                new Rectangle(0, 0, size.width, size.height),
-                ImageLockMode.ReadWrite, bmpMin.PixelFormat);
-
-            Marshal.Copy(bData.Scan0, bytes, 0, bytes.Length);
-
-            for (int i = 0; i < maxPointerLenght; i += 4)
-            {
-                B = bytes[i + 0];
-                G = bytes[i + 1];
-                R = bytes[i + 2];
-                A = bytes[i + 3];
-                //reduce colors to true / false                
-                Color fa = Color.FromArgb(A, R, G, B);
-                lResult.Add(PixelMetric(fa));
-            }
-            bmpMin.UnlockBits(bData);
-
-            return lResult;
-        }
-
         public static (List<bool> hash, float MeanBrightness, float MeanSaturation) GetImageMetrics(Bitmap bm, (int width, int height) size)
         {
             int bytesPerPixel = 4; //Format32bppArgb
@@ -139,12 +105,119 @@ namespace Masterduel_TLDR_overlay.Screen
             return (lResult, meanBrightness, meanSaturation);
         }
 
+        public class ImageHash : IComparable<ImageHash>
+        {
+            private List<bool> _hash = new();
+            public List<bool> Hash {
+                get
+                {
+                    return _hash;
+                }
+                set
+                {
+                    var tmp = (int)Math.Sqrt(_hash.Count);
+                    
+                    _hash = value;
+                    HashSum = _hash.Count((x) => x);
+                    Resolution = new(tmp, tmp);
+                }
+            }
+            public int HashSum { get; private set; } = 0;
+            
+            // Constructors
+            public Size Resolution { get; private set; } = new(0, 0);
+
+            public ImageHash(Bitmap bm, Size size)
+            {
+                Hash = GetImageHash(bm, (size.Width, size.Height));
+                HashSum = Hash.Count((x) => x);
+                Resolution = size;
+            }
+            public ImageHash(Bitmap bm, (int w, int h) size)
+            {
+                Hash = GetImageHash(bm, (size.w, size.h));
+                HashSum = Hash.Count((x) => x);
+                Resolution = new Size(size.w, size.h);
+            }
+            public ImageHash(List<bool> hash, Size size)
+            {
+                Hash = hash;
+                HashSum = Hash.Count((x) => x);
+                Resolution = size;
+            }
+            public ImageHash(List<bool> hash, (int w, int h) size)
+            {
+                Hash = hash;
+                HashSum = Hash.Count((x) => x);
+                Resolution = new Size(size.w, size.h);
+            }
+            public ImageHash() { }
+
+            // Public Methods
+            int IComparable<ImageHash>.CompareTo(ImageHash? other)
+            {
+                if (other == null)
+                    throw new ArgumentException("ImageHash may not be null.");
+                var size = other.Resolution;
+                if (size != Resolution)
+                    throw new ArgumentException("The hashes must have the same size.");
+                // Convert list of bool to a list of ints
+                var integerHash1 = Hash.Select(x => x ? 1 : 0).ToList();
+                var integerHash2 = other.Hash.Select(x => x ? 1 : 0).ToList();
+                return integerHash2.Zip(integerHash1, (i, j) => i - j).Sum();
+            }
+
+            public float CompareTo(ImageHash other)
+            {
+                int equalElements = Hash.Zip(other.Hash, (i, j) => i == j).Count(eq => eq);
+                return (float) equalElements / (Resolution.Width * Resolution.Height);
+            }
+        }
+
         // Private methods
         private static bool PixelMetric(Color pixel)
         {
 
             // Grey scale > 0.5
             return ((pixel.R + pixel.G + pixel.B) / 3) <= 128;
+        }
+
+        /// <summary>
+        /// Creates a hash list from an image bitmap to make comparison efficient. The underlying metric used is a greyscale normalization function.
+        /// </summary>
+        /// <param name="bm1">The image Bitmap.</param>
+        /// <param name="size">Dimensions of the image hash.</param>
+        /// <returns>A <see cref="List"/> of <see cref="bool"/> values representing the hashmap.</returns>
+        private static List<bool> GetImageHash(Bitmap bm, (int width, int height) size)
+        {
+            int bytesPerPixel = 4; //Format32bppArgb
+            int maxPointerLenght = size.width * size.height * bytesPerPixel;
+            int stride = size.width * bytesPerPixel;
+            var bytes = new byte[size.height * stride];
+            byte R, G, B, A;
+
+            List<bool> lResult = new();
+            Bitmap bmpMin = new(bm, new Size(size.width, size.height));
+
+            BitmapData bData = bmpMin.LockBits(
+                new Rectangle(0, 0, size.width, size.height),
+                ImageLockMode.ReadWrite, bmpMin.PixelFormat);
+
+            Marshal.Copy(bData.Scan0, bytes, 0, bytes.Length);
+
+            for (int i = 0; i < maxPointerLenght; i += 4)
+            {
+                B = bytes[i + 0];
+                G = bytes[i + 1];
+                R = bytes[i + 2];
+                A = bytes[i + 3];
+                //reduce colors to true / false                
+                Color fa = Color.FromArgb(A, R, G, B);
+                lResult.Add(PixelMetric(fa));
+            }
+            bmpMin.UnlockBits(bData);
+
+            return lResult;
         }
     }
 }

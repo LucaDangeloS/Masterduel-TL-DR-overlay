@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
+    <PackageReference Include="System.Runtime.Caching" Version="6.0.0" />
     <PackageReference Include="Tesseract.Net.SDK" Version="4.5.411" />
   </ItemGroup>
 

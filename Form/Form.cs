@@ -4,16 +4,18 @@ using Masterduel_TLDR_overlay.Ocr;
 using Masterduel_TLDR_overlay.Screen;
 using System.Diagnostics;
 using Masterduel_TLDR_overlay.WindowHandlers;
-using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
 using static Masterduel_TLDR_overlay.WindowHandlers.WindowHandlerInterface;
 using Masterduel_TLDR_overlay.Caching;
 using Masterduel_TLDR_overlay.Windows;
-using System.Security.Policy;
+using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
+using static PropertiesLoader;
 
 namespace Masterduel_TLDR_overlay
 {
     public partial class Form : System.Windows.Forms.Form
     {
+        private PropertiesC Properties = PropertiesLoader.Instance.Properties;
+
         public Form()
         {
             InitializeComponent();
@@ -26,7 +28,7 @@ namespace Masterduel_TLDR_overlay
 
         private void upload_image_click(object sender, EventArgs e)
         {
-            OpenFileDialog open = new OpenFileDialog();
+            OpenFileDialog open = new();
             // image filters  
             open.Filter = "Image Files(*.jpg; *.jpeg; *.gif; *.bmp)|*.jpg; *.jpeg; *.gif; *.bmp";
             if (open.ShowDialog() == DialogResult.OK)
@@ -38,24 +40,25 @@ namespace Masterduel_TLDR_overlay
         }
 
 
-        private void StartLoop(object sender, EventArgs e) {
+        private void StartLoop(object sender, EventArgs e)
+        {
             startButton.Enabled = false;
             stopButton.Enabled = true;
 
             WindowHandlerInterface handler;
             //bool mouseClicked;
-            //var db = new LocalDB();
-            //db.Initialize();
 
-
-            try {
+            try
+            {
                 handler = new Handler(MasterduelWindow.WINDOW_NAME);
-            } catch (NoWindowFoundException) {
+            }
+            catch (NoWindowFoundException)
+            {
                 Debug.WriteLine("Could not find the window. Please make sure it is open and try again.");
                 return;
             }
 
-            MemCache cachedSplashes = new();
+            MemCache cachedSplashes = new(Properties.MAX_PIXELS_DIFF);
             LocalDB db = new();
             db.Initialize();
 
@@ -93,11 +96,12 @@ namespace Masterduel_TLDR_overlay
                 }));
                 return;
             }
-            CardInfo? cardName = await CheckCardInScreen(windowArea, cachedSplashes, db);
+            CardInfo? cardName = await CheckCardInScreen(windowArea, cachedSplashes, db,
+                Properties.COMPARISON_PRECISION);
             Debug.WriteLine(cardName?.ToString());
         }
 
-        private async Task<CardInfo?> CheckCardInScreen((Point, Point) baseCoords, MemCache cachedSplashes, LocalDB db, float precision = 0.92f)
+        private async Task<CardInfo?> CheckCardInScreen((Point, Point) baseCoords, MemCache splashCache, LocalDB db, float precision)
         {
             (Point, Point) area;
             Bitmap bm;
@@ -106,30 +110,32 @@ namespace Masterduel_TLDR_overlay
             area = MasterduelWindow.Window.GetCardSplashCoords(baseCoords);
 
             // Take screenshot of area
-            bm = Screen.ImageProcessing.TakeScreenshotFromArea(area.Item1, area.Item2);
+            bm = ImageProcessing.TakeScreenshotFromArea(area.Item1, area.Item2);
             Invoke(new Action(() => {
                 // Debugging purposes
                 pictureBox1.Image = (Image)bm.Clone();
             }));
-            
+            var size = db.SplashSize;
+            var hash = new ImageHash(bm, size);
+
             // See if it's cached in memory
-            if (cachedSplashes.CheckInCache(bm, precision))
+            if (splashCache.CheckInCache(hash, precision))
             {
-                return cachedSplashes.LastLookup;
+                Debug.WriteLine("Got from the Memory Cache!");
+                return splashCache.LastLookup;
             }
 
             CardInfo? card;
-            
+
             // See if it's in local db
-            var size = db.SplashSize;
-            var (hash, mBrightness, mSaturation) = Screen.ImageProcessing.GetImageMetrics(bm, size);
             card = db.GetCardBySplash(hash, precision);
 
             bm.Dispose();
 
             if (card != null)
             {
-                Debug.WriteLine("Got from the cached!");
+                Debug.WriteLine("Got from the Local DB!");
+                splashCache.AddToCache(hash, card);
                 return card;
             }
 
@@ -139,34 +145,36 @@ namespace Masterduel_TLDR_overlay
             // TODO: First Take screenshot of text, then from the splash, and then compare the splashes.
             // If the splashes don't match, drop. If the text isn't recognized, repeat the last 2 steps X times.
             // If it fails X or more times, add it as a semi-permanent entry on cache indicating it not to do further checking.
-            if (!CheckSplashCardTextValidity(area, size, hash, precision)) return null;
-            
+            if (!CheckSplashCardTextValidity(area, hash, precision)) return null;
+
             // Fetch the API
             area = MasterduelWindow.Window.GetCardTitleCoords(baseCoords);
-            bm = Screen.ImageProcessing.TakeScreenshotFromArea(area);
+            bm = TakeScreenshotFromArea(area);
             Invoke(new Action(() => {
                 pictureBox1.Image = (Image)bm.Clone();
             }));
             card = await CheckText(bm);
 
             bm.Dispose();
-            
+
             if (card != null)
             {
                 //Cache the card in DB
-                Debug.WriteLine("Caching card: " + card.Name);
-                card.SetSplash(hash, mBrightness, mSaturation);
+                Debug.WriteLine("Caching card into local DB: " + card.Name);
+                card.SetSplash(hash);
                 db.AddCard(card);
             }
             //Cache in local memory
+            Debug.WriteLine("Caching splash into memory");
+            splashCache.AddToCache(hash, card);
 
             return card;
         }
 
-        private static bool CheckSplashCardTextValidity((Point, Point) area, (int, int) size, List<bool> hash, float precision)
+        private static bool CheckSplashCardTextValidity((Point, Point) area, ImageHash hash, float precision)
         {
-            Bitmap bm2 = Screen.ImageProcessing.TakeScreenshotFromArea(area.Item1, area.Item2);
-            if (Screen.ImageProcessing.CompareImages(Screen.ImageProcessing.GetImageHash(bm2, size), hash) < precision)
+            Bitmap bm2 = TakeScreenshotFromArea(area.Item1, area.Item2);
+            if (hash.CompareTo(new ImageHash(bm2, hash.Resolution)) < precision)
             {
                 return false;
             }
@@ -220,7 +228,7 @@ namespace Masterduel_TLDR_overlay
         {
             startButton.Enabled = true;
             stopButton.Enabled = false;
-            
+
         }
     }
 }
