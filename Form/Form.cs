@@ -10,6 +10,7 @@ using Masterduel_TLDR_overlay.Windows;
 using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
 using static PropertiesLoader;
 using Masterduel_TLDR_overlay.Overlay;
+using static SQLite.SQLite3;
 
 namespace Masterduel_TLDR_overlay
 {
@@ -152,7 +153,12 @@ namespace Masterduel_TLDR_overlay
                 detectedCard = validTypes.Any((x) => ocrRes.Text.ToLower().Contains(x));
                 contrastedBm.Dispose();
             }
-            Debug.WriteLine(ocrRes.Text.ToLower());
+            Invoke(new Action(() =>
+            {
+                // Debugging purposes
+                endText.Text += ocrRes.Text.ToLower();
+            }));
+            
 
             // Last effort for Trap cards...
             if (!detectedCard)
@@ -216,14 +222,10 @@ namespace Masterduel_TLDR_overlay
             }
 
             // Ultimately, Fecth the API
-
-            // Check if card image is still the same
-            if (!CheckSplashCardTextValidity(area, hash, precision)) return null;
-
-            // Fetch the API
             if (CheckIfCardInScreen(baseCoords))
             {
                 card = await FecthAPI(baseCoords, hash);
+                if (card == null) return null;
             }
 
             if (card != null)
@@ -254,7 +256,15 @@ namespace Masterduel_TLDR_overlay
 
             area = MasterduelWindow.Window.GetCardTitleCoords(baseCoords);
             bm = TakeScreenshotFromArea(area);
-                
+            
+            // Check is the card is still the same
+            area = MasterduelWindow.Window.GetCardSplashCoords(baseCoords);
+            if (!CheckSplashCardTextValidity(area, hash, Properties.COMPARISON_PRECISION))
+            {
+                bm.Dispose();
+                return null;
+            }
+
             card = await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Light);
             if (card == null) return null;
 
