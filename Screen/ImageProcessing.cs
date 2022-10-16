@@ -105,6 +105,45 @@ namespace Masterduel_TLDR_overlay.Screen
             return (lResult, meanBrightness, meanSaturation);
         }
 
+        public static void ContrastWhitePixels(Bitmap bm)
+        {
+            int bytesPerPixel = 4; //Format32bppArgb
+            int maxPointerLenght = bm.Width * bm.Height * bytesPerPixel;
+            int stride = bm.Width * bytesPerPixel;
+            var bytes = new byte[bm.Height * stride];
+            byte R, G, B, A;
+
+            BitmapData bData = bm.LockBits(
+                new Rectangle(0, 0, bm.Width, bm.Height),
+                ImageLockMode.ReadWrite, bm.PixelFormat);
+
+            Marshal.Copy(bData.Scan0, bytes, 0, bytes.Length);
+
+            for (int i = 0; i < maxPointerLenght; i += 4)
+            {
+                B = bytes[i + 0];
+                G = bytes[i + 1];
+                R = bytes[i + 2];
+                A = bytes[i + 3];
+                //reduce colors to true / false                
+                Color fa = Color.FromArgb(A, R, G, B);
+                if (fa.GetBrightness() > 0.70f)
+                {
+                    bytes[i + 0] = 255;
+                    bytes[i + 1] = 255;
+                    bytes[i + 2] = 255;
+                }
+                else
+                {
+                    bytes[i + 0] = 0;
+                    bytes[i + 1] = 0;
+                    bytes[i + 2] = 0;
+                }
+            }
+            Marshal.Copy(bytes, 0, bData.Scan0, bytes.Length);
+            bm.UnlockBits(bData);
+        }
+
         public class ImageHash : IComparable<ImageHash>
         {
             private List<bool> _hash = new();

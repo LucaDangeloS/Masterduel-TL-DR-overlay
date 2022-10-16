@@ -23,7 +23,7 @@ namespace Masterduel_TLDR_overlay.Masterduel
             {
                 Name = card.Name,
                 Effects = ConvertEffectsToDB(card.Effects),
-                Splash = new List<SplashDB>() { splash }
+                Splash = new List<SplashDB>() { splash },
             };
 
             return dbCard;
@@ -62,6 +62,7 @@ namespace Masterduel_TLDR_overlay.Masterduel
                 var effectDB = new EffectDB();
                 effectDB.EffectType = effect.Type.ToString();
                 effectDB.EffectText = effect.EffectString;
+                effectDB.QuickEffect = effect.QuickEffect;
                 ret.Add(effectDB);
             }
 

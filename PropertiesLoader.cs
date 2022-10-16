@@ -62,7 +62,7 @@ public sealed class PropertiesLoader
     {
         public int MAX_PIXELS_DIFF { get; init; } = 40;
         public int SPLASH_SIZE { get; init; } = 24;
-        public float COMPARISON_PRECISION { get; init; } = 0.94f;
+        public float COMPARISON_PRECISION { get; init; } = 0.96f;
 
         public Dictionary<string, string> Serialize()
         {

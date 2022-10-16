@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Masterduel_TLDR_overlay.TextProcessing
@@ -35,16 +36,16 @@ namespace Masterduel_TLDR_overlay.TextProcessing
         }
         
         /// <summary>
-        /// This method is case insensitive.
+        /// This method is case sensitive.
         /// </summary>
         /// <param name="str"></param>
         /// <param name="word"></param>
         /// <param name="blackList"></param>
         /// <returns></returns>
-        public static (List<string> matches, string rest) GetMatchingSentencesFromText(string str, string word, string[]? blackList)
+        public static (List<string> matches, string rest) GetMatchingSentencesFromText(string str, string word, string[]? blackList = null)
         {
             List<string> ListOfTermVectors = new();
-            var (matchedString, rest) = GetSubStringsCointainingWord(StripSpecialCharacters(str.ToLower(), ":;[],"), word, blackList);
+            var (matchedString, rest) = GetSubStringsCointainingWord(StripSpecialCharacters(str, ":;[],"), word, blackList);
 
             foreach (string match in matchedString)
             {
@@ -53,7 +54,20 @@ namespace Masterduel_TLDR_overlay.TextProcessing
 
             return (ListOfTermVectors, rest);
         }
-        
+
+        public static (List<string> matches, string rest) GetMatchingSentencesFromText(string str, string[] words, string[]? blackList = null)
+        {
+            List<string> ListOfTermVectors = new();
+            var (matchedString, rest) = GetSubStringsCointainingWord(StripSpecialCharacters(str, ":;[],"), words, blackList);
+
+            foreach (string match in matchedString)
+            {
+                ListOfTermVectors.Add(match);
+            }
+
+            return (ListOfTermVectors, rest);
+        }
+
         /// <summary>
         /// This method is case sensitive.
         /// </summary>
@@ -68,7 +82,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             // TODO: change 
             foreach (string sentence in text.Split('.'))
             {                
-                if (sentence.Contains(word) && (blackList == null || !blackList.Any(sentence.Contains)))
+                if (Regex.IsMatch(sentence, word) && (blackList == null || !blackList.Any(sentence.Contains)))
                 {
                     Array.Resize(ref results, results.Length + 1);
                     results[^1] = sentence;
@@ -80,6 +94,43 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 }
             }
             return (results, string.Join(".", rest));
+        }
+        public static (string[] matchedString, string rest) GetSubStringsCointainingWord(string text, string[] words, string[]? blackList)
+        {
+            string[] rest = Array.Empty<string>();
+            string[] results = Array.Empty<string>();
+            // TODO: change 
+            foreach (string sentence in text.Split('.'))
+            {
+                if (words.Any((word) => Regex.IsMatch(sentence, word)) && (blackList == null || !blackList.Any(sentence.Contains)))
+                {
+                    Array.Resize(ref results, results.Length + 1);
+                    results[^1] = sentence;
+                }
+                else
+                {
+                    Array.Resize(ref rest, rest.Length + 1);
+                    rest[^1] = sentence;
+                }
+            }
+            return (results, string.Join(".", rest));
+        }
+        
+        public static bool IsStringInSentence(string sentence, string[] words)
+        {
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (sentence.Contains(words[i]))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool IsStringInSentence(string sentence, string word)
+        {
+            return sentence.Contains(word);
         }
 
         public static string[] FileParser(string dir)

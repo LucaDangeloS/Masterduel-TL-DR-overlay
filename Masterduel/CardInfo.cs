@@ -54,7 +54,6 @@ namespace Masterduel_TLDR_overlay.Masterduel
             public enum EffectType
             {
                 NEGATION,
-                QUICK_EFFECT,
                 UNTARGETABLE,
                 INMUNITY,
                 BANISH,
@@ -63,10 +62,12 @@ namespace Masterduel_TLDR_overlay.Masterduel
             }
             public EffectType Type { get; set; }
             public string EffectString;
-            public Effect(EffectType type, string effectString)
+            public bool QuickEffect { get; set; }
+            public Effect(EffectType type, string effectString, bool isQuickEffect = false)
             {
                 Type = type;
                 EffectString = effectString;
+                QuickEffect = isQuickEffect;
             }
             public override string ToString() => $"{Type}:\r\n {EffectString}"; // TODO: Capitalize
         }
@@ -91,11 +92,15 @@ namespace Masterduel_TLDR_overlay.Masterduel
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
+        
         [ForeignKey(typeof(CardInfoDB))]
         public int CardId { get; set; }
+
+        public bool QuickEffect { get; set; } = false;
+
         public string EffectType { get; set; }
         
-        [MaxLength(300)]
+        [MaxLength(500)]
         public string EffectText { get; set; }
 
         [ManyToOne]
@@ -110,10 +115,6 @@ namespace Masterduel_TLDR_overlay.Masterduel
         public int CardId { get; set; }
         [Indexed]
         public string SplashHash { get; set; }
-        [Indexed]
-        public float MeanBrightness { get; set; }
-        [Indexed]
-        public float MeanSaturation { get; set; }
         [Indexed]
         public int SplashHashSum { get; set; }
         [ManyToOne]

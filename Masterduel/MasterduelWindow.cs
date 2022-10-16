@@ -36,6 +36,13 @@ namespace Masterduel_TLDR_overlay.Masterduel
                 public float X_REL_END_POS => 0.19f;
                 public float Y_REL_END_POS => 0.18f;
             };
+            protected class CardTypeRelPos : RelPos
+            {
+                public float X_REL_INIT_POS => 0.0175f;
+                public float Y_REL_INIT_POS => 0.4288f;
+                public float X_REL_END_POS => 0.2156f;
+                public float Y_REL_END_POS => 0.460f;
+            };
             protected class DeckEditorTextRelPos : RelPos
             {
                 public float X_REL_INIT_POS => 0.03f;
@@ -50,7 +57,21 @@ namespace Masterduel_TLDR_overlay.Masterduel
                 public float X_REL_END_POS => 0.0922f;
                 public float Y_REL_END_POS => 0.3546f;
             };
-            
+            protected class EnemyLPRelPos : RelPos
+            {
+                public float X_REL_INIT_POS => 0.7993f;
+                public float Y_REL_INIT_POS => 0.0733f;
+                public float X_REL_END_POS => 0.8262f;
+                public float Y_REL_END_POS => 0.1033f;
+            };
+            protected class YourLPRelPos : RelPos
+            {
+                public float X_REL_INIT_POS => 0.0818f;
+                public float Y_REL_INIT_POS => 0.9422f;
+                public float X_REL_END_POS => 0.11f;
+                public float Y_REL_END_POS => 0.9744f;
+            };
+
             private static bool IsWindowed(Size size)
             {
                 var aspectRatio = (float)size.Height / size.Width;
@@ -101,7 +122,21 @@ namespace Masterduel_TLDR_overlay.Masterduel
                 RelPos pos = new SplashRelPos();
                 return GetPosCoords(wp, pos);
             }
-
+            public static (Point, Point) GetYourLP((Point, Point) wp)
+            {
+                RelPos pos = new YourLPRelPos();
+                return GetPosCoords(wp, pos);
+            }
+            public static (Point, Point) GetEnemyLP((Point, Point) wp)
+            {
+                RelPos pos = new EnemyLPRelPos();
+                return GetPosCoords(wp, pos);
+            }
+            public static (Point, Point) GetCardTypeCoords((Point, Point) wp)
+            {
+                RelPos pos = new CardTypeRelPos();
+                return GetPosCoords(wp, pos);
+            }
             // private methods
             private static (Point, Point) GetPosCoords((Point, Point) wp, RelPos pos)
             {

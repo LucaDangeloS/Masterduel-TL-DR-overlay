@@ -9,13 +9,15 @@ using Masterduel_TLDR_overlay.Caching;
 using Masterduel_TLDR_overlay.Windows;
 using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
 using static PropertiesLoader;
+using Masterduel_TLDR_overlay.Overlay;
 
 namespace Masterduel_TLDR_overlay
 {
     public partial class Form : System.Windows.Forms.Form
     {
         private PropertiesC Properties = PropertiesLoader.Instance.Properties;
-
+        OCR ocr = new();
+        
         public Form()
         {
             InitializeComponent();
@@ -39,7 +41,6 @@ namespace Masterduel_TLDR_overlay
             }
         }
 
-
         private void StartLoop(object sender, EventArgs e)
         {
             startButton.Enabled = false;
@@ -47,6 +48,9 @@ namespace Masterduel_TLDR_overlay
 
             WindowHandlerInterface handler;
             //bool mouseClicked;
+            //var form = new OverlayForm();
+            //form.SetWindowStyle();
+            //form.Show();
 
             try
             {
@@ -58,11 +62,11 @@ namespace Masterduel_TLDR_overlay
                 return;
             }
 
-            MemCache cachedSplashes = new(Properties.MAX_PIXELS_DIFF);
+            MemCache cachedSplashes = new(Properties.MAX_PIXELS_DIFF, Properties.SPLASH_SIZE);
             LocalDB db = new();
             db.Initialize();
 
-            new Thread(() =>
+            new Thread(async () =>
             {
                 DateTime start = DateTime.UtcNow;
 
@@ -74,7 +78,7 @@ namespace Masterduel_TLDR_overlay
                     {
                         //if (handler.GetLeftMousePressed())
                         //{
-                        DoThings(handler, cachedSplashes, db);
+                        await DoThings(handler, cachedSplashes, db);
                         //}
                     }
                     Thread.Sleep(500);
@@ -82,7 +86,7 @@ namespace Masterduel_TLDR_overlay
             }).Start();
         }
 
-        private async void DoThings(WindowHandlerInterface handler, MemCache cachedSplashes, LocalDB db)
+        private async Task DoThings(WindowHandlerInterface handler, MemCache cachedSplashes, LocalDB db)
         {
             (Point, Point) windowArea;
             try
@@ -91,9 +95,6 @@ namespace Masterduel_TLDR_overlay
             }
             catch (Exception)
             {
-                Invoke(new Action(() => {
-                    endText.Text = "No window was found";
-                }));
                 return;
             }
             CardInfo? cardName = await CheckCardInScreen(windowArea, cachedSplashes, db,
@@ -101,31 +102,102 @@ namespace Masterduel_TLDR_overlay
             Debug.WriteLine(cardName?.ToString());
         }
 
+        private bool CheckIfInDuelScreen((Point, Point) baseCoords)
+        {
+            ImageAnalysis ocrRes;
+
+            var points = MasterduelWindow.Window.GetEnemyLP(baseCoords);
+            var bm = TakeScreenshotFromArea(points.Item1, points.Item2);
+            bool detectedLP = false;
+            ocrRes = ocr.ReadImage(bm);
+            
+            // Detect LPs in screen
+            detectedLP = ocrRes.Text.ToLower().Contains("lp");
+
+            bm.Dispose();
+
+            if (!detectedLP) { 
+                points = MasterduelWindow.Window.GetYourLP(baseCoords);
+                bm = TakeScreenshotFromArea(points.Item1, points.Item2);
+                ocrRes = ocr.ReadImage(bm);
+                bm.Dispose();
+                detectedLP = ocrRes.Text.ToLower().Contains("lp");
+            }
+           
+            return detectedLP;
+        }
+
+        private bool CheckIfCardInScreen((Point, Point) baseCoords)
+        {
+            ImageAnalysis ocrRes;
+            string[] validTypes = { "effect", "spell", "trap", "link", "pendulum", "xyz", "synchro", "fusion", "ritual" };
+            bool detectedCard = false;
+            var points = MasterduelWindow.Window.GetEnemyLP(baseCoords);
+            var bm = TakeScreenshotFromArea(points.Item1, points.Item2);
+
+            // Get if card is in screen
+            points = MasterduelWindow.Window.GetCardTypeCoords(baseCoords);
+            bm = TakeScreenshotFromArea(points.Item1, points.Item2);
+
+            ocrRes = ocr.ReadImage(bm);
+
+            detectedCard = validTypes.Any((x) => ocrRes.Text.ToLower().Contains(x));
+            
+            // Get contrasted image
+            if (!detectedCard)
+            {
+                Bitmap contrastedBm = (Bitmap)bm.Clone();
+                ContrastWhitePixels(contrastedBm);
+                ocrRes = ocr.ReadImage(bm);
+                detectedCard = validTypes.Any((x) => ocrRes.Text.ToLower().Contains(x));
+                contrastedBm.Dispose();
+            }
+            Debug.WriteLine(ocrRes.Text.ToLower());
+
+            // Last effort for Trap cards...
+            if (!detectedCard)
+            {
+                var t = ocrRes.Text.ToLower().Trim();
+                if (t == "i" || t == "e") detectedCard = true;
+            }
+
+            bm.Dispose();
+            return detectedCard;
+        }
+
         private async Task<CardInfo?> CheckCardInScreen((Point, Point) baseCoords, MemCache splashCache, LocalDB db, float precision)
         {
             (Point, Point) area;
             Bitmap bm;
 
+            // Check if in duel screen
+            if (!CheckIfInDuelScreen(baseCoords))
+            {
+                Debug.WriteLine("Skipping card analysis");
+                return null;
+            }
+
             // Get splash area coords
             area = MasterduelWindow.Window.GetCardSplashCoords(baseCoords);
 
             // Take screenshot of area
-            bm = ImageProcessing.TakeScreenshotFromArea(area.Item1, area.Item2);
-            Invoke(new Action(() => {
-                // Debugging purposes
-                pictureBox1.Image = (Image)bm.Clone();
-            }));
+            bm = TakeScreenshotFromArea(area.Item1, area.Item2);
             var size = db.SplashSize;
             var hash = new ImageHash(bm, size);
+            CardInfo? card = null;
 
             // See if it's cached in memory
             if (splashCache.CheckInCache(hash, precision))
             {
                 Debug.WriteLine("Got from the Memory Cache!");
+                card = splashCache.LastLookup;
+                if (card != null)
+                    Invoke(new Action(() => {
+                        endText.Text = String.Join("\r\n", card.Effects);
+                    }));
                 return splashCache.LastLookup;
             }
 
-            CardInfo? card;
 
             // See if it's in local db
             card = db.GetCardBySplash(hash, precision);
@@ -136,26 +208,23 @@ namespace Masterduel_TLDR_overlay
             {
                 Debug.WriteLine("Got from the Local DB!");
                 splashCache.AddToCache(hash, card);
+                if (card != null)
+                    Invoke(new Action(() => {
+                        endText.Text = String.Join("\r\n", card.Effects);
+                    }));
                 return card;
             }
 
             // Ultimately, Fecth the API
 
             // Check if card image is still the same
-            // TODO: First Take screenshot of text, then from the splash, and then compare the splashes.
-            // If the splashes don't match, drop. If the text isn't recognized, repeat the last 2 steps X times.
-            // If it fails X or more times, add it as a semi-permanent entry on cache indicating it not to do further checking.
             if (!CheckSplashCardTextValidity(area, hash, precision)) return null;
 
             // Fetch the API
-            area = MasterduelWindow.Window.GetCardTitleCoords(baseCoords);
-            bm = TakeScreenshotFromArea(area);
-            Invoke(new Action(() => {
-                pictureBox1.Image = (Image)bm.Clone();
-            }));
-            card = await CheckText(bm);
-
-            bm.Dispose();
+            if (CheckIfCardInScreen(baseCoords))
+            {
+                card = await FecthAPI(baseCoords, hash);
+            }
 
             if (card != null)
             {
@@ -168,6 +237,34 @@ namespace Masterduel_TLDR_overlay
             Debug.WriteLine("Caching splash into memory");
             splashCache.AddToCache(hash, card);
 
+            if (card !=  null)
+                Invoke(new Action(() => {
+                    endText.Text = String.Join("\r\n", card.Effects);
+                }));
+
+            return card;
+        }
+
+        private async Task<CardInfo?> FecthAPI((Point, Point) baseCoords, ImageHash hash)
+        {
+            (Point, Point) area;
+            Bitmap bm = new Bitmap(Properties.SPLASH_SIZE, Properties.SPLASH_SIZE);
+            CardInfo? card = null;
+            
+
+            area = MasterduelWindow.Window.GetCardTitleCoords(baseCoords);
+            bm = TakeScreenshotFromArea(area);
+                
+            card = await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Light);
+            if (card == null) return null;
+
+            Invoke(new Action(() =>
+            {
+                // Debugging purposes
+                pictureBox1.Image = (Image)bm.Clone();
+            }));
+            bm.Dispose();
+            
             return card;
         }
 
@@ -182,30 +279,36 @@ namespace Masterduel_TLDR_overlay
             return true;
         }
 
-        private static async Task<CardInfo?> CheckText(Bitmap bm)
+        private async Task<CardInfo?> CheckText(Bitmap bm, 
+            TextProcessing.CardText.Trim_aggressiveness aggressiveness)
         {
             // Run OCR on image
-            OCR ocr = new();
-            var Result = ocr.ReadImage(bm);
-            var reformattedCardName = TextProcessing.CardText.TrimCardName(Result.Text, TextProcessing.CardText.Trim_aggressiveness.Light);
+            
+            var result = ocr.ReadImage(bm);
+            Invoke(new Action(() =>
+            {
+                // Debugging purposes
+                endText.Text = result.Text;
+            }));
+
+            var reformattedCardName = TextProcessing.CardText.TrimCardName(result.Text, aggressiveness);
 
             if (reformattedCardName == "") return null;
 
             try
             {
                 List<CardInfo> apiRes;
-                if (reformattedCardName.Length > 10)
+                if (aggressiveness > TextProcessing.CardText.Trim_aggressiveness.Light)
                 {
                     apiRes = await CardsAPI.GetCardByNameAsync(reformattedCardName);
                 }
                 else
                 {
-                    apiRes = await CardsAPI.GetCardByExactNameAsync(reformattedCardName);
+                    apiRes = await CardsAPI.TryGetCardNameAsync(reformattedCardName);
                 }
 
                 // TODO: Change just retrieving the first card in the api response
-                if (apiRes == null) return null;
-                CardInfo res = TextProcessing.CardText.GetDescFeatures(apiRes[0]);
+                CardInfo res = TextProcessing.CardText.GetDescFeatures(apiRes.First());
                 return res;
             }
             catch (HttpRequestException excp)

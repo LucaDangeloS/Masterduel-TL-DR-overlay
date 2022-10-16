@@ -23,7 +23,7 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             StringBuilder sb = new();
             int agr_int = (int)aggressiveness;
             
-            sb.Append(TextUtils.StripSpecialCharacters(name, "#='[]();|_"));
+            sb.Append(TextUtils.StripSpecialCharacters(name, "#='[]();|_\\"));
             string str = sb.ToString();
             int len = str.Length;
 
@@ -35,8 +35,8 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             }
             if (aggressiveness == Trim_aggressiveness.Light)
             {
-                return TextUtils.StripSpecialCharacters(str[..1], ":!") + 
-                    str[1..(len-1)] + TextUtils.StripSpecialCharacters(str.Substring(len - 1, 1), ":!");
+                return TextUtils.StripSpecialCharacters(str[..1], ":!\\") + 
+                    str[1..(len-1)] + TextUtils.StripSpecialCharacters(str.Substring(len - 1, 1), "\\:!");
             }
             return str.Substring(agr_int, len - agr_int * 2);
         }
@@ -51,16 +51,32 @@ namespace Masterduel_TLDR_overlay.TextProcessing
 
         static public CardInfo GetDescFeatures(CardInfo card)
         {
+            string lowerDesc = card.Desc.ToLower();
+            
             // Negations
-            var (matches, rest) = TextUtils.GetMatchingSentencesFromText(card.Desc, "negate", TextRules.FALSE_NEGATIONS);
+            var (matches, rest) = TextUtils.GetMatchingSentencesFromText(lowerDesc, TextRules.TRUE_NEGATION, TextRules.FALSE_NEGATIONS);
             var negations = GetCardNegations(matches);
             card.AddEffects(negations);
 
-            // TODO: Add the rest of effects
+            // Immunities
+            (matches, rest) = TextUtils.GetMatchingSentencesFromText(rest, TextRules.TRUE_IMMUNITIES);
+            var immunities = GetCardEffects(Effect.EffectType.INMUNITY, matches);
+            card.AddEffects(immunities);
+
+            // Banishes
+            (matches, rest) = TextUtils.GetMatchingSentencesFromText(rest, TextRules.TRUE_BANISH);
+            var banishes = GetCardEffects(Effect.EffectType.BANISH, matches);
+            card.AddEffects(banishes);
+
+            // Destruction
+            (matches, rest) = TextUtils.GetMatchingSentencesFromText(rest, TextRules.TRUE_DESTRUCTIONS);
+            var destructions = GetCardEffects(Effect.EffectType.DESTRUCTION, matches);
+            card.AddEffects(destructions);
 
             return card;
         }
 
+        
         // Private methods
         static private void AddToDict(string str, ref Dictionary<string, int> dict)
         {
@@ -75,8 +91,8 @@ namespace Masterduel_TLDR_overlay.TextProcessing
 
         private class TextRules
         {
+            public static string TRUE_NEGATION = "negate";
             public static string[] FALSE_NEGATIONS = { "cannot be negated", "was negated" };
-
             public static string[] TRUE_IMMUNITIES =
             {
                 "immune to",
@@ -86,11 +102,17 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 "cannot target",
                 "cannot be targeted"
             };
+            public static string TRUE_BANISH = "((opponent|on the field)[^.]{0,30}?banish[^ed]|banish[^ed][^.]{0,30}?(opponent|on the field))";
+            public static string[] TRUE_DESTRUCTIONS =
+            {
+                "((opponent|on the field)[^.]{0,30}?destroy[^eds]|destroy[^eds][^.]{0,30}?(opponent|on the field))"
+            };
             public static string[] TRUE_QUICK_EFFECTS =
             {
                 "quick effect",
                 "during your opponent",
-                "during either player"
+                "during either player",
+                "when your opponent"
             };
         }
 
@@ -116,8 +138,20 @@ namespace Masterduel_TLDR_overlay.TextProcessing
 
                 if (trueCoeff > falseCoeff)
                 {
-                    effectsList.Add(new Effect(Effect.EffectType.NEGATION, sentence));
+                    effectsList.Add(new Effect(Effect.EffectType.NEGATION, sentence, true));
                 }
+            }
+            return effectsList;
+        }
+        
+        private static List<Effect> GetCardEffects(Effect.EffectType effectType, List<string> matches)
+        {
+            List<Effect> effectsList = new();
+
+            foreach (string sentence in matches)
+            {
+                effectsList.Add(new Effect(effectType, sentence,
+                    TextUtils.IsStringInSentence(sentence, TextRules.TRUE_QUICK_EFFECTS)));
             }
             return effectsList;
         }

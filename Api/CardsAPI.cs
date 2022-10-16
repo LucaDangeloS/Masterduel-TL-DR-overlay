@@ -66,10 +66,26 @@ namespace Masterduel_TLDR_overlay.Api
             {
                 cards.Add(CardAPIObjConverter.ConvertToCardInfo(jsonCard));
             }
-
+            if (cards.Count == 0) throw new NoCardsFoundException("No cards were found with name: " + cardName);
+            
             return cards;
         }
+
+        public static async Task<List<CardInfo>> TryGetCardNameAsync(string cardName)
+        {
+            try
+            {
+                var res = await GetCardByExactNameAsync(cardName);
+                return res;
+            }
+            catch (NoCardsFoundException) { }
+            catch (HttpRequestException) { }
+            
+            return await GetCardByNameAsync(cardName);
+        }
     }
+    
+    
 
     class JsonCardResponse
     {

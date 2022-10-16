@@ -7,6 +7,8 @@ using Masterduel_TLDR_overlay.Masterduel;
 using System.Runtime.Caching;
 using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
 using System.Security.Cryptography.X509Certificates;
+using System.Diagnostics;
+using System.Drawing.Text;
 
 namespace Masterduel_TLDR_overlay.Caching
 {
@@ -14,202 +16,90 @@ namespace Masterduel_TLDR_overlay.Caching
     {
         private static readonly CacheItemPolicy shortTermCachePolicy = new();
         private static readonly CacheItemPolicy longTermCachePolicy = new();
-        private readonly MemoryCache NonCardsCache = new("NotACard");
-        private BinaryTree NonCardsBTree = new();
-        private BinaryTree CardsBTree = new();
-        private readonly MemoryCache CardsCache = new("Cards");
+        private readonly MemoryCache NonCardsCache = new("NotCardsCacheBins");
+        private readonly MemoryCache CardsCache = new("CardCacheBins");
         public CardInfo? LastLookup;
-        private int MaxPixelDiff;
+        private readonly int MaxPixelDiff;
+        private readonly int Bins;
 
-        public MemCache(int maxPixelDiff)
+        public MemCache(int maxPixelDiff, int splashSize)
         {
-            shortTermCachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(20);
-            longTermCachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddHours(3);
+            shortTermCachePolicy.SlidingExpiration = TimeSpan.FromMinutes(5);
+            shortTermCachePolicy.RemovedCallback = RenovateNonCardsCache;
+            longTermCachePolicy.SlidingExpiration = TimeSpan.FromMinutes(20);
+            longTermCachePolicy.RemovedCallback = RenovateCardsCache;
+            Bins = (int) Math.Floor(Math.Pow(splashSize, 2) / maxPixelDiff);
             MaxPixelDiff = maxPixelDiff;
-            //NonCardsCache.Add("NotACard", NonCardsBTree, shortTermCachePolicy);
-            //CardsCache.Add("Cards", CardsBTree, longTermCachePolicy);
+            
+            for (int i = 0; i <= Bins; i++)
+            {
+                CardsCache.Add(new CacheItem((i).ToString(), new List<Dictionary<ImageHash, CardInfo>>()), longTermCachePolicy);
+            }
 
-            //var testElement = (BinaryTree)NonCardsCache.GetCacheItem("NotACard").Value;
+            for (int i = 0; i <= Bins; i++)
+            {
+                NonCardsCache.Add(new CacheItem((i).ToString(), new List<ImageHash>()), shortTermCachePolicy);
+            }
 
-            //testElement.Add
-            //    (
-            //        new Node(new ImageHash(new List<bool> { true, true, true, true, false, false, false, false, true }, (3, 3)), new CardInfo("Not a card", "This is not a card"))
-            //    );
-            //testElement.Add
-            //    (
-            //        new Node(new ImageHash(new List<bool> { true, true, false, false, false, false, false, false, true }, (3, 3)), new CardInfo("Not a card", "This is not a card"))
-            //    );
-            //testElement.Add
-            //    (
-            //        new Node(new ImageHash(new List<bool> { true, true, true, true, true, false, false, true, true }, (3, 3)), new CardInfo("Not a card", "This is not a card"))
-            //    );
-            //testElement.Add
-            //    (
-            //        new Node(new ImageHash(new List<bool> { true, true, true, true, true, true, true, true, true }, (3, 3)), new CardInfo("Not a card", "This is not a card"))
-            //    );
-            //testElement.Add
-            //    (
-            //        new Node(new ImageHash(new List<bool> { true, true, true, true, false, false, false, true, true }, (3, 3)), new CardInfo("Not a card", "This is not a card"))
-            //    );
-            //var testElement2 = (BinaryTree)NonCardsCache.GetCacheItem("NotACard").Value;
-            //var testElement3 = testElement2.Search(10, 2);
         }
 
         public void AddToCache(ImageHash hash, CardInfo? card)
         {
+            var bin = hash.HashSum / MaxPixelDiff;
+
             if (card == null)
             {
-                NonCardsBTree.Add(new Node(hash, card), MaxPixelDiff);
+                var list = (List<ImageHash>) NonCardsCache.GetCacheItem(bin.ToString()).Value;
+                list.Add(hash);
             }
             else
             {
-                CardsBTree.Add(new Node(hash, card), MaxPixelDiff);
+                var list = (List<Dictionary<ImageHash, CardInfo>>) CardsCache.GetCacheItem(bin.ToString()).Value;
+                list.Add(new Dictionary<ImageHash, CardInfo>() { { hash, card } });
             }
         }
 
         public bool CheckInCache(ImageHash hash, float precision)
         {
-            var searchRes = CardsBTree.Search(hash.HashSum, MaxPixelDiff);
-            if (searchRes != null && searchRes.Hash.Any((x) => x.CompareTo(hash) >= precision))
+            var bin = hash.HashSum / MaxPixelDiff;
+            // TODO: Fix cache getting null references
+            var list = (List<ImageHash>)NonCardsCache.AddOrGetExisting(bin.ToString(), new List<ImageHash>(), shortTermCachePolicy);
+
+            ImageHash? res = list.Find((x) => x.CompareTo(hash) >= precision);
+            
+            if (res != null)
             {
-                LastLookup = searchRes.Card;
+                LastLookup = null;
                 return true;
             }
-            searchRes = NonCardsBTree.Search(hash.HashSum, MaxPixelDiff);
-            if (searchRes != null && searchRes.Hash.Any((x) => x.CompareTo(hash) >= precision))
+            
+            var list2 = (List<Dictionary<ImageHash, CardInfo>>) CardsCache.GetCacheItem(bin.ToString()).Value;
+
+            foreach (var dict in list2)
             {
-                LastLookup = searchRes.Card;
-                return true;
+                foreach (var item in dict)
+                {
+                    if (item.Key.CompareTo(hash) >= precision)
+                    {
+                        LastLookup = item.Value;
+                        return true;
+                    }
+                }
             }
             return false;
         }
+        
 
-        // -------------------------- Binary Tree -------------------------- //
-        protected class Node
+        // Private methods
+        private void RenovateNonCardsCache(CacheEntryRemovedArguments args)
         {
-            public Node? Left, Right;
-            public int HashSum;
-            public List<ImageHash> Hash = new();
-            public CardInfo? Card;
-
-            public Node(ImageHash hash, CardInfo? card)
-            {
-                Hash.Add(hash);
-                HashSum = hash.HashSum;
-                Card = card;
-            }
-
-            public void AddImage(ImageHash im)
-            {
-                Hash.Add(im);
-                HashSum = Hash.Sum(x => x.HashSum) / Hash.Count;
-            }
+            NonCardsCache.Add(new CacheItem(args.CacheItem.Key, new List<ImageHash>())
+                , shortTermCachePolicy);
         }
-
-        protected class BinaryTree
+        private void RenovateCardsCache(CacheEntryRemovedArguments args)
         {
-            Node? root;
-
-            public BinaryTree(ImageHash hash, CardInfo? card)
-            {
-                root = new Node(hash, card);
-            }
-
-            public BinaryTree()
-            {
-                root = null;
-            }
-
-            public void Add(Node node, int maxDiff)
-            {
-                if (root == null)
-                {
-                    root = node;
-                    return;
-                }
-
-                Node current = root;
-                
-                while (true)
-                {
-                    if (node.HashSum < current.HashSum - maxDiff)
-                    {
-                        if (current.Left == null)
-                        {
-                            current.Left = node;
-                            break;
-                        }
-                        current = current.Left;
-                    }
-                    else if (node.HashSum > current.HashSum + maxDiff)
-                    {
-                        if (current.Right == null)
-                        {
-                            current.Right = node;
-                            break;
-                        }
-                        current = current.Right;
-                    }
-                    else
-                    {
-                        // Duplicates
-                        current.AddImage(node.Hash.First());
-                        break;
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Returns the node with the closest hashSum to the given hashSum.
-            /// </summary>
-            /// <param name="hashSum">Sum of the Hash list of an image.</param>
-            /// <param name="maxDiff">The maximum abs difference from the hashSum.</param>
-            /// <returns>Returns <see cref="Node"/> element. If no results were found returns null.</returns>
-            public Node? Search(int hashSum, int maxDiff)
-            {
-                List<Node> resultsList = new();
-
-                RecursiveSearch(ref resultsList, root, hashSum, maxDiff);
-
-                resultsList.Sort((a, b) => Math.Abs(a.HashSum - hashSum).CompareTo(Math.Abs(b.HashSum - hashSum)));
-
-                return resultsList.FirstOrDefault();
-            }
-            
-            // Private methods
-            private void RecursiveSearch(ref List<Node> resultsList, 
-                Node? currentNode, int hashSum, int maxDiff)
-            {
-                if (currentNode == null)
-                    return;
-
-                int currDiff = currentNode.HashSum - hashSum;
-
-                if (currDiff < -maxDiff) // Value is too small, go through the Right
-                {
-                    if (currentNode.Right == null) return;
-                    RecursiveSearch(ref resultsList, currentNode.Right, hashSum, maxDiff);
-                }
-                else if (currDiff > maxDiff) // Value is too big, go through the Left
-                {
-                    if (currentNode.Left == null) return;
-                    RecursiveSearch(ref resultsList, currentNode.Left, hashSum, maxDiff);
-                } 
-                else
-                {
-                    resultsList.Add(currentNode);
-
-                    int absDiff = Math.Abs(currDiff);
-
-                    // Left branch
-                    RecursiveSearch(ref resultsList, currentNode.Left, hashSum, maxDiff);
-
-                    // Right branch
-                    RecursiveSearch(ref resultsList, currentNode.Right, hashSum, maxDiff);
-                }
-            }
+            CardsCache.Add(new CacheItem(args.CacheItem.Key, new List<Dictionary<ImageHash, CardInfo>>())
+                , longTermCachePolicy);
         }
-
-        // ----------------------------------------------------------------- //
     }
 }

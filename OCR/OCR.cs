@@ -1,5 +1,7 @@
 ﻿using Patagames.Ocr;
 using Patagames.Ocr.Enums;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace Masterduel_TLDR_overlay.Ocr
 {
@@ -12,7 +14,9 @@ namespace Masterduel_TLDR_overlay.Ocr
         {
             api = OcrApi.Create();
             api.Init(Languages.English);
+            
         }
+
         /// <summary>
         /// Recognizes text from image using the Tesseract OCR engine.
         /// </summary>
@@ -24,12 +28,44 @@ namespace Masterduel_TLDR_overlay.Ocr
             string plainText;
             ImageAnalysis ret = new ImageAnalysis();
 
-            try
-            {
-              plainText = api.GetTextFromImage(bm);
-                ret.Text = plainText;
-            } catch (Exception) { }
+            plainText = api.GetTextFromImage(bm);
+            ret.Text = ProcessExclusions(plainText);
 
+            return ret;
+        }
+
+        private static string ProcessExclusions(string rawString)
+        {
+            // Evil Twin
+            Regex evilRegex = new Regex("(.*?vil).{ 0,4}?(Twins?)(.*)");
+            Regex liveRegex = new Regex("(.*?ive).{ 0,4}?(Twins?)(.*)");
+            string ret = rawString;
+
+            if (evilRegex.IsMatch(rawString))
+            {
+                Match m = evilRegex.Match(rawString);
+                Group evilGroup = m.Groups[0];
+                Group twinGroup = m.Groups[1];
+                Group restGroup = m.Groups[2];
+
+                if (evilGroup.Success)
+                {
+                    ret = evilGroup.Value + @"★" + twinGroup.Value + restGroup.Value;
+                }
+            }
+            // Live Twin
+            else if (liveRegex.IsMatch(rawString))
+            {
+                Match m = evilRegex.Match(rawString);
+                Group evilGroup = m.Groups[0];
+                Group twinGroup = m.Groups[1];
+                Group restGroup = m.Groups[2];
+
+                if (evilGroup.Success)
+                {
+                    ret = evilGroup.Value + @"☆" + twinGroup.Value + restGroup.Value;
+                }
+            }
             return ret;
         }
     }
