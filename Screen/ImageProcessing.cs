@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Policy;
 using System.Windows.Forms;
+using static PropertiesLoader;
 
 namespace Masterduel_TLDR_overlay.Screen
 {
@@ -13,8 +14,10 @@ namespace Masterduel_TLDR_overlay.Screen
     /// </summary>
     public static class ImageProcessing
     {
+        private static readonly PropertiesC Properties = PropertiesLoader.Instance.Properties;
+
         // Public methods
-        
+
         /// <summary>
         /// Takes a screenshot of the rectangle delimited <c>from</c> a point <c>to</c> a point.
         /// </summary>
@@ -146,6 +149,7 @@ namespace Masterduel_TLDR_overlay.Screen
 
         public class ImageHash : IComparable<ImageHash>
         {
+            private readonly float _precision = Properties.COMPARISON_PRECISION;
             private List<bool> _hash = new();
             public List<bool> Hash {
                 get
@@ -193,6 +197,7 @@ namespace Masterduel_TLDR_overlay.Screen
             public ImageHash() { }
 
             // Public Methods
+            // Override
             int IComparable<ImageHash>.CompareTo(ImageHash? other)
             {
                 if (other == null)
@@ -204,6 +209,17 @@ namespace Masterduel_TLDR_overlay.Screen
                 var integerHash1 = Hash.Select(x => x ? 1 : 0).ToList();
                 var integerHash2 = other.Hash.Select(x => x ? 1 : 0).ToList();
                 return integerHash2.Zip(integerHash1, (i, j) => i - j).Sum();
+            }
+            // Override
+            public virtual bool Equals(ImageHash? other)
+            {
+                if (other == null)
+                    throw new ArgumentException("ImageHash may not be null.");
+                var size = other.Resolution;
+                if (size != Resolution)
+                    throw new ArgumentException("The hashes must have the same size.");
+                // Convert list of bool to a list of ints
+                return CompareTo(other) >= _precision;
             }
 
             public float CompareTo(ImageHash other)

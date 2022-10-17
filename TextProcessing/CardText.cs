@@ -20,25 +20,26 @@ namespace Masterduel_TLDR_overlay.TextProcessing
         /// <returns>Returns the string with the cleaned up and trimmed card name.</returns>
         static public string TrimCardName(string name, Trim_aggressiveness aggressiveness)
         {
+            // TODO: Add None
+
             StringBuilder sb = new();
             int agr_int = (int)aggressiveness;
-            
-            sb.Append(TextUtils.StripSpecialCharacters(name, "#='[]();|_\\"));
+            int floor_agr_int = (int) Math.Ceiling((double)agr_int / 2);
+
+            sb.Append(TextUtils.StripSpecialCharacters(name, "#=[]();|_\\"));
             string str = sb.ToString();
             int len = str.Length;
 
-            if (len <= 14)
+            if (len <= agr_int * 3)
             {
-                var new_agr_int = agr_int / 2;
-                if (aggressiveness <= Trim_aggressiveness.Light || len <= new_agr_int * 4) { return str; }
-                return str.Substring(new_agr_int, len - new_agr_int * 2);
+                return str;
             }
             if (aggressiveness == Trim_aggressiveness.Light)
             {
                 return TextUtils.StripSpecialCharacters(str[..1], ":!\\") + 
                     str[1..(len-1)] + TextUtils.StripSpecialCharacters(str.Substring(len - 1, 1), "\\:!");
             }
-            return str.Substring(agr_int, len - agr_int * 2);
+            return str.Substring(floor_agr_int, len - agr_int - floor_agr_int);
         }
 
         public enum Trim_aggressiveness

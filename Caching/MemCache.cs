@@ -21,7 +21,7 @@ namespace Masterduel_TLDR_overlay.Caching
         public CardInfo? LastLookup;
         private readonly int MaxPixelDiff;
         private readonly int Bins;
-        private int MaxCacheSize = 20;
+        private int MaxCacheSize = 40;
 
         public MemCache(int maxPixelDiff, int splashSize)
         {
@@ -34,12 +34,12 @@ namespace Masterduel_TLDR_overlay.Caching
             
             for (int i = 0; i <= Bins; i++)
             {
-                CardsCache.Add(new CacheItem((i).ToString(), new List<Dictionary<ImageHash, CardInfo>>()), longTermCachePolicy);
+                CardsCache.Add(new CacheItem((i).ToString(), new LinkedList<Dictionary<ImageHash, CardInfo>>()), longTermCachePolicy);
             }
 
             for (int i = 0; i <= Bins; i++)
             {
-                NonCardsCache.Add(new CacheItem((i).ToString(), new List<ImageHash>()), shortTermCachePolicy);
+                NonCardsCache.Add(new CacheItem((i).ToString(), new LinkedList<ImageHash>()), shortTermCachePolicy);
             }
 
         }
@@ -50,41 +50,49 @@ namespace Masterduel_TLDR_overlay.Caching
 
             if (card == null)
             {
-                var list = (List<ImageHash>) NonCardsCache.GetCacheItem(bin.ToString()).Value;
-                list.Add(hash);
+                var list = (LinkedList<ImageHash>) NonCardsCache.GetCacheItem(bin.ToString()).Value;
+                list.AddLast(hash);
                 if (list.Count > MaxCacheSize)
-                    list.RemoveAt(0);
+                    list.RemoveFirst();
             }
             else
             {
-                var list = (List<Dictionary<ImageHash, CardInfo>>) CardsCache.GetCacheItem(bin.ToString()).Value;
-                list.Add(new Dictionary<ImageHash, CardInfo>() { { hash, card } });
+                var list = (LinkedList<Dictionary<ImageHash, CardInfo>>) CardsCache.GetCacheItem(bin.ToString()).Value;
+                list.AddLast(new Dictionary<ImageHash, CardInfo>() { { hash, card } });
                 if (list.Count > MaxCacheSize)
-                    list.RemoveAt(0);
+                    list.RemoveFirst();
             }
         }
 
-        public bool CheckInCache(ImageHash hash, float precision)
+        public bool CheckInCache(ImageHash hash)
         {
             var bin = hash.HashSum / MaxPixelDiff;
             // TODO: Fix cache getting null references
-            var list = (List<ImageHash>)NonCardsCache.AddOrGetExisting(bin.ToString(), new List<ImageHash>(), shortTermCachePolicy);
+            var list = (LinkedList<ImageHash>)NonCardsCache.AddOrGetExisting(bin.ToString(), new LinkedList<ImageHash>(), shortTermCachePolicy);
 
-            ImageHash? res = list.Find((x) => x.CompareTo(hash) >= precision);
-            
+            ImageHash? res = null;
+            foreach (var item in list)
+            {
+                if (item.Equals(hash))
+                {
+                    res = item;
+                    break;
+                }
+            }
+
             if (res != null)
             {
                 LastLookup = null;
                 return true;
             }
             
-            var list2 = (List<Dictionary<ImageHash, CardInfo>>) CardsCache.GetCacheItem(bin.ToString()).Value;
+            var list2 = (LinkedList<Dictionary<ImageHash, CardInfo>>) CardsCache.GetCacheItem(bin.ToString()).Value;
 
             foreach (var dict in list2)
             {
                 foreach (var item in dict)
                 {
-                    if (item.Key.CompareTo(hash) >= precision)
+                    if (item.Key.Equals(hash))
                     {
                         LastLookup = item.Value;
                         return true;
@@ -98,25 +106,25 @@ namespace Masterduel_TLDR_overlay.Caching
         // Private methods
         private void RenovateNonCardsCache(CacheEntryRemovedArguments args)
         {
-            NonCardsCache.Add(new CacheItem(args.CacheItem.Key, new List<ImageHash>())
+            NonCardsCache.Add(new CacheItem(args.CacheItem.Key, new LinkedList<ImageHash>())
                 , shortTermCachePolicy);
         }
         private void RenovateCardsCache(CacheEntryRemovedArguments args)
         {
-            CardsCache.Add(new CacheItem(args.CacheItem.Key, new List<Dictionary<ImageHash, CardInfo>>())
+            CardsCache.Add(new CacheItem(args.CacheItem.Key, new LinkedList<Dictionary<ImageHash, CardInfo>>())
                 , longTermCachePolicy);
         }
         private void UpdateNonCardsCache(CacheEntryUpdateArguments args)
         {
-            var list = (List<ImageHash>) NonCardsCache.GetCacheItem(args.Key).Value;
+            var list = (LinkedList<ImageHash>) NonCardsCache.GetCacheItem(args.Key).Value;
             if (list.Count > MaxCacheSize)
-                list.RemoveAt(0);
+                list.RemoveFirst();
         }
         private void UpdateCardsCache(CacheEntryUpdateArguments args)
         {
-            var list = (List<Dictionary<ImageHash, CardInfo>>) CardsCache.GetCacheItem(args.Key).Value;
+            var list = (LinkedList<Dictionary<ImageHash, CardInfo>>) CardsCache.GetCacheItem(args.Key).Value;
             if (list.Count > MaxCacheSize)
-                list.RemoveAt(0);
+                list.RemoveFirst();
         }
     }
 }

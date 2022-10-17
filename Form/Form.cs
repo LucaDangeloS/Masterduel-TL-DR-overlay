@@ -165,6 +165,7 @@ namespace Masterduel_TLDR_overlay
             {
                 var t = ocrRes.Text.ToLower().Trim();
                 if (t == "i" || t == "e") detectedCard = true;
+                Debug.WriteLine("----> " + t);
             }
 
             bm.Dispose();
@@ -193,7 +194,7 @@ namespace Masterduel_TLDR_overlay
             CardInfo? card = null;
 
             // See if it's cached in memory
-            if (splashCache.CheckInCache(hash, precision))
+            if (splashCache.CheckInCache(hash))
             {
                 Debug.WriteLine("Got from the Memory Cache!");
                 card = splashCache.LastLookup;
@@ -259,13 +260,16 @@ namespace Masterduel_TLDR_overlay
             
             // Check is the card is still the same
             area = MasterduelWindow.Window.GetCardSplashCoords(baseCoords);
-            if (!CheckSplashCardTextValidity(area, hash, Properties.COMPARISON_PRECISION))
+            if (!CheckSplashCardTextValidity(area, hash))
             {
                 bm.Dispose();
                 return null;
             }
-
+            
             card = await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Light);
+            card ??= await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Moderate);
+            card ??= await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Aggresive);
+
             if (card == null) return null;
 
             Invoke(new Action(() =>
@@ -278,10 +282,10 @@ namespace Masterduel_TLDR_overlay
             return card;
         }
 
-        private static bool CheckSplashCardTextValidity((Point, Point) area, ImageHash hash, float precision)
+        private static bool CheckSplashCardTextValidity((Point, Point) area, ImageHash hash)
         {
             Bitmap bm2 = TakeScreenshotFromArea(area.Item1, area.Item2);
-            if (hash.CompareTo(new ImageHash(bm2, hash.Resolution)) < precision)
+            if (!hash.Equals(new ImageHash(bm2, hash.Resolution)))
             {
                 return false;
             }
@@ -302,7 +306,7 @@ namespace Masterduel_TLDR_overlay
             }));
 
             var reformattedCardName = TextProcessing.CardText.TrimCardName(result.Text, aggressiveness);
-
+            Debug.WriteLine("API Text: " + reformattedCardName);
             if (reformattedCardName == "") return null;
 
             try
@@ -315,6 +319,12 @@ namespace Masterduel_TLDR_overlay
                 else
                 {
                     apiRes = await CardsAPI.TryGetCardNameAsync(reformattedCardName);
+                }
+                // Check if there aren't many possible cards for the query
+                if (!CheckCardAmount(apiRes))
+                {
+                    Debug.WriteLine($"Too many possible cards in the query {reformattedCardName}");
+                    return null;
                 }
 
                 // TODO: Change just retrieving the first card in the api response
@@ -335,6 +345,13 @@ namespace Masterduel_TLDR_overlay
             }
 
             return null;
+        }
+
+        private bool CheckCardAmount(List<CardInfo> apiRes)
+        {
+            int magicNumber = 20;
+            if (apiRes.Count > magicNumber) return false;
+            return true;
         }
 
         private void StopLoop(object sender, EventArgs e)

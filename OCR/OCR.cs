@@ -37,16 +37,16 @@ namespace Masterduel_TLDR_overlay.Ocr
         private static string ProcessExclusions(string rawString)
         {
             // Evil Twin
-            Regex evilRegex = new Regex("(.*?vil).{ 0,4}?(Twins?)(.*)");
-            Regex liveRegex = new Regex("(.*?ive).{ 0,4}?(Twins?)(.*)");
+            Regex evilRegex = new Regex("(.*?vil).{0,4}?(Twins?)(.*)", RegexOptions.IgnoreCase);
+            Regex liveRegex = new Regex("(.*?ive).{0,4}?(Twins?)(.*)", RegexOptions.IgnoreCase);
             string ret = rawString;
 
             if (evilRegex.IsMatch(rawString))
             {
                 Match m = evilRegex.Match(rawString);
-                Group evilGroup = m.Groups[0];
-                Group twinGroup = m.Groups[1];
-                Group restGroup = m.Groups[2];
+                Group evilGroup = m.Groups[1];
+                Group twinGroup = m.Groups[2];
+                Group restGroup = m.Groups[3];
 
                 if (evilGroup.Success)
                 {
@@ -56,16 +56,17 @@ namespace Masterduel_TLDR_overlay.Ocr
             // Live Twin
             else if (liveRegex.IsMatch(rawString))
             {
-                Match m = evilRegex.Match(rawString);
-                Group evilGroup = m.Groups[0];
-                Group twinGroup = m.Groups[1];
-                Group restGroup = m.Groups[2];
+                Match m = liveRegex.Match(rawString);
+                Group liveGroup = m.Groups[1];
+                Group twinGroup = m.Groups[2];
+                Group restGroup = m.Groups[3];
 
-                if (evilGroup.Success)
+                if (liveGroup.Success)
                 {
-                    ret = evilGroup.Value + @"☆" + twinGroup.Value + restGroup.Value;
+                    ret = liveGroup.Value + @"☆" + twinGroup.Value + restGroup.Value;
                 }
             }
+            Debug.WriteLine("OCR result: " + ret);
             return ret;
         }
     }
