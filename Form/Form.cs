@@ -143,30 +143,30 @@ namespace Masterduel_TLDR_overlay
             ocrRes = ocr.ReadImage(bm);
 
             detectedCard = validTypes.Any((x) => ocrRes.Text.ToLower().Contains(x));
-            
-            // Get contrasted image
-            if (!detectedCard)
-            {
-                Bitmap contrastedBm = (Bitmap)bm.Clone();
-                ContrastWhitePixels(contrastedBm);
-                ocrRes = ocr.ReadImage(bm);
-                detectedCard = validTypes.Any((x) => ocrRes.Text.ToLower().Contains(x));
-                contrastedBm.Dispose();
-            }
+
             Invoke(new Action(() =>
             {
                 // Debugging purposes
                 endText.Text += ocrRes.Text.ToLower();
-            }));
-            
+                pictureBox1.Image = (Image)bm.Clone();
 
-            // Last effort for Trap cards...
-            if (!detectedCard)
-            {
-                var t = ocrRes.Text.ToLower().Trim();
-                if (t == "i" || t == "e") detectedCard = true;
-                Debug.WriteLine("----> " + t);
-            }
+            }));
+            // Get contrasted image (Tesseract should already do this under the hood)
+            //if (!detectedCard)
+            //{
+            //    Bitmap contrastedBm = (Bitmap)bm.Clone();
+            //    ContrastWhitePixels(contrastedBm);
+            //    ocrRes = ocr.ReadImage(bm);
+            //    detectedCard = validTypes.Any((x) => ocrRes.Text.ToLower().Contains(x));
+            //    Invoke(new Action(() =>
+            //    {
+            //        // Debugging purposes
+            //        endText.Text += ocrRes.Text.ToLower();
+            //        pictureBox1.Image = (Image)contrastedBm.Clone();
+
+            //    }));
+            //    contrastedBm.Dispose();
+            //}
 
             bm.Dispose();
             return detectedCard;

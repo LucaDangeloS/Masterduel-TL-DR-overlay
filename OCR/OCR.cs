@@ -1,20 +1,21 @@
-﻿using Patagames.Ocr;
-using Patagames.Ocr.Enums;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
+using TesseractOCR;
+
 
 namespace Masterduel_TLDR_overlay.Ocr
 {
     internal class OCR
     {
-        private OcrApi api;
+        private Engine _engine_5;
 
         // Public methods
         public OCR()
         {
-            api = OcrApi.Create();
-            api.Init(Languages.English);
-            
+            //_engine = new TesseractEngine(@"./tessdata", "Nintendo", EngineMode.Default);
+            //_engine.DefaultPageSegMode = Tesseract.PageSegMode.SingleLine;
+            _engine_5 = new Engine(@"./tessdata", "MasterduelEng", TesseractOCR.Enums.EngineMode.Default);
+            _engine_5.DefaultPageSegMode = TesseractOCR.Enums.PageSegMode.SingleLine;
         }
 
         /// <summary>
@@ -28,7 +29,14 @@ namespace Masterduel_TLDR_overlay.Ocr
             string plainText;
             ImageAnalysis ret = new ImageAnalysis();
 
-            plainText = api.GetTextFromImage(bm);
+            MemoryStream ms = new MemoryStream();
+            bm.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            var img = TesseractOCR.Pix.Image.LoadFromMemory(ms);
+            
+            var processesImg = _engine_5.Process(img);
+            plainText = processesImg.Text;
+            processesImg.Dispose();
+            
             ret.Text = ProcessExclusions(plainText);
 
             return ret;

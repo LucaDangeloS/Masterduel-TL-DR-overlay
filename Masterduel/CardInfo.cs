@@ -54,11 +54,12 @@ namespace Masterduel_TLDR_overlay.Masterduel
             public enum EffectType
             {
                 NEGATION,
-                UNTARGETABLE,
                 INMUNITY,
                 BANISH,
                 DESTRUCTION,
-                ON_DEATH
+                ON_DEATH,
+                TAKE_CONTROL,
+                QUICK_EFFECT
             }
             public EffectType Type { get; set; }
             public string EffectString;

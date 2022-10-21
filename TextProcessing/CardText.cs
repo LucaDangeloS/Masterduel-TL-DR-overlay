@@ -74,6 +74,15 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             var destructions = GetCardEffects(Effect.EffectType.DESTRUCTION, matches);
             card.AddEffects(destructions);
 
+            // Take Control
+            
+            // On-Death
+
+            // General Quick-Effects
+            (matches, rest) = TextUtils.GetMatchingSentencesFromText(rest, TextRules.TRUE_QUICK_EFFECTS);
+            var quickEffects = GetCardEffects(Effect.EffectType.QUICK_EFFECT, matches);
+            card.AddEffects(quickEffects);
+
             return card;
         }
 
@@ -152,7 +161,8 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             foreach (string sentence in matches)
             {
                 effectsList.Add(new Effect(effectType, sentence,
-                    TextUtils.IsStringInSentence(sentence, TextRules.TRUE_QUICK_EFFECTS)));
+                    effectType == Effect.EffectType.QUICK_EFFECT 
+                    || TextUtils.IsStringInSentence(sentence, TextRules.TRUE_QUICK_EFFECTS)));
             }
             return effectsList;
         }
