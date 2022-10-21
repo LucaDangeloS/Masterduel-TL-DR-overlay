@@ -17,7 +17,7 @@ namespace Masterduel_TLDR_overlay
     public partial class Form : System.Windows.Forms.Form
     {
         private PropertiesC Properties = PropertiesLoader.Instance.Properties;
-        OCR ocr = new();
+        private readonly OCR ocr = new();
         
         public Form()
         {
@@ -149,24 +149,7 @@ namespace Masterduel_TLDR_overlay
                 // Debugging purposes
                 endText.Text += ocrRes.Text.ToLower();
                 pictureBox1.Image = (Image)bm.Clone();
-
             }));
-            // Get contrasted image (Tesseract should already do this under the hood)
-            //if (!detectedCard)
-            //{
-            //    Bitmap contrastedBm = (Bitmap)bm.Clone();
-            //    ContrastWhitePixels(contrastedBm);
-            //    ocrRes = ocr.ReadImage(bm);
-            //    detectedCard = validTypes.Any((x) => ocrRes.Text.ToLower().Contains(x));
-            //    Invoke(new Action(() =>
-            //    {
-            //        // Debugging purposes
-            //        endText.Text += ocrRes.Text.ToLower();
-            //        pictureBox1.Image = (Image)contrastedBm.Clone();
-
-            //    }));
-            //    contrastedBm.Dispose();
-            //}
 
             bm.Dispose();
             return detectedCard;
@@ -227,6 +210,7 @@ namespace Masterduel_TLDR_overlay
             {
                 card = await FecthAPI(baseCoords, hash);
                 if (card == null) return null;
+                if (card.CardNameChanged) return card;
             }
 
             if (card != null)
@@ -265,10 +249,19 @@ namespace Masterduel_TLDR_overlay
                 bm.Dispose();
                 return null;
             }
-            
-            card = await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Light);
-            card ??= await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Moderate);
-            card ??= await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Aggresive);
+            try
+            {
+                card = await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Light);
+                card ??= await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Moderate);
+                card ??= await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Aggresive);
+            }
+            catch (CardNameChangedException)
+            {
+                card = new();
+                card.CardNameChanged = true;
+                Debug.Write("This card has it's name changed! Therefor ethe analysis won't work.");
+                return card;
+            }
 
             if (card == null) return null;
 
@@ -296,9 +289,18 @@ namespace Masterduel_TLDR_overlay
         private async Task<CardInfo?> CheckText(Bitmap bm, 
             TextProcessing.CardText.Trim_aggressiveness aggressiveness)
         {
+            // Check if the card name isn't yellow
+            if (GetTextColor(bm) == TextColorE.Yellow)
+            {
+                throw new CardNameChangedException("The card name is not it's original");
+            }
+            Invoke(new Action(() =>
+            {
+                // Debugging purposes
+                pictureBox1.Image = (Image)bm.Clone();
+            }));
             // Run OCR on image
-            
-            var result = ocr.ReadImage(bm);
+            ImageAnalysis result = ocr.ReadImage(bm);
             Invoke(new Action(() =>
             {
                 // Debugging purposes
@@ -312,7 +314,7 @@ namespace Masterduel_TLDR_overlay
             try
             {
                 List<CardInfo> apiRes;
-                if (aggressiveness > TextProcessing.CardText.Trim_aggressiveness.Light)
+                if (aggressiveness > TextProcessing.CardText.Trim_aggressiveness.Moderate)
                 {
                     apiRes = await CardsAPI.GetCardByNameAsync(reformattedCardName);
                 }
@@ -327,7 +329,6 @@ namespace Masterduel_TLDR_overlay
                     return null;
                 }
 
-                // TODO: Change just retrieving the first card in the api response
                 CardInfo res = TextProcessing.CardText.GetDescFeatures(apiRes.First());
                 return res;
             }
@@ -339,18 +340,13 @@ namespace Masterduel_TLDR_overlay
             {
                 Debug.WriteLine(excp.Message);
             }
-            finally
-            {
-                Debug.WriteLine(reformattedCardName);
-            }
 
             return null;
         }
 
         private bool CheckCardAmount(List<CardInfo> apiRes)
         {
-            int magicNumber = 20;
-            if (apiRes.Count > magicNumber) return false;
+            if (apiRes.Count > Properties.MAX_POSSIBLE_CARDS_FROM_API) return false;
             return true;
         }
 

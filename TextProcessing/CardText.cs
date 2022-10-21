@@ -1,6 +1,8 @@
 ﻿using Masterduel_TLDR_overlay.Masterduel;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
+using TesseractOCR;
 using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
 
 namespace Masterduel_TLDR_overlay.TextProcessing
@@ -34,11 +36,29 @@ namespace Masterduel_TLDR_overlay.TextProcessing
             {
                 return str;
             }
-            if (aggressiveness == Trim_aggressiveness.Light)
+            int str_start_trim = 2;
+            int str_end_trim = 2;
+            str = TextUtils.StripSpecialCharacters(str[..str_start_trim], "#:!\\") +
+                        str[str_start_trim..(len - str_start_trim)] + 
+                        TextUtils.StripSpecialCharacters(str.Substring(len - str_end_trim, str_end_trim), "\\:!\\-=");
+            
+            switch (aggressiveness)
             {
-                return TextUtils.StripSpecialCharacters(str[..1], "#:!\\") + 
-                    str[1..(len-1)] + TextUtils.StripSpecialCharacters(str.Substring(len - 1, 1), "\\:!");
+                case Trim_aggressiveness.Light:
+                    return str;
+
+                case Trim_aggressiveness.Moderate:
+                    Regex re = new Regex("[a-zA-Z0-9 ]*([\\-= ]*)", RegexOptions.Multiline);
+                    Match m = re.Match(str);
+                    Group filteredStr = m.Groups[0];
+
+                    if (filteredStr.Success)
+                    {
+                        return filteredStr.Value.Trim();
+                    }
+                    break;
             }
+
             return str.Substring(floor_agr_int, len - agr_int - floor_agr_int);
         }
 

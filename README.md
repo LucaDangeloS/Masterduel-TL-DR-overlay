@@ -1,8 +1,8 @@
 # Masterduel TLDR overlay
 
 # TODOs
-- [ ] Database module (SQLite)
+- [x] Database module (SQLite)
 - [X] Text description processing module
 - [ ] UI module
-- [ ] Create main loop/event driven logic
-- [ ] Text sampling and intersection for difficult card names
+- [x] Create main loop/event driven logic
+- [ ] Add case when canr name is changed (yellow text)

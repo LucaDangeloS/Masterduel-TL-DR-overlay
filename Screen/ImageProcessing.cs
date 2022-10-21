@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Masterduel_TLDR_overlay.Ocr;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -40,35 +41,6 @@ namespace Masterduel_TLDR_overlay.Screen
             return TakeScreenshotFromArea(area.Item1, area.Item2);
         }
 
-        /// <summary>
-        /// Compares two bitmap images and returns the difference coefficient rangind from 0 to 1.
-        /// </summary>
-        /// <param name="bm1">First bitmap.</param>
-        /// <param name="bm2">Second bitmap.</param>
-        /// <returns>The difference coefficient between the images</returns>
-        public static float CompareImages(Bitmap bm1, Bitmap bm2)
-        {
-            var size = (24, 24);
-            List<bool> iHash1 = GetImageHash(bm1, size);
-            List<bool> iHash2 = GetImageHash(bm2, size);
-
-            //determine the number of equal pixel (x of 256)
-            int equalElements = iHash1.Zip(iHash2, (i, j) => i == j).Count(eq => eq);
-            return (float)equalElements / (size.Item1 * size.Item2);
-        }
-        public static float CompareImages(List<bool> iHash1, List<bool> iHash2)
-        {
-            if (iHash1.Count != iHash2.Count)
-            {
-                throw new ArgumentException("The hashes must have the same size.");
-            }
-            var temp = (int) Math.Sqrt(iHash1.Count);
-            var size = (temp, temp);
-            //determine the number of equal pixels
-            int equalElements = iHash1.Zip(iHash2, (i, j) => i == j).Count(eq => eq);
-            return (float) equalElements / (size.Item1 * size.Item2);
-        }
-
         public static (List<bool> hash, float MeanBrightness, float MeanSaturation) GetImageMetrics(Bitmap bm, (int width, int height) size)
         {
             int bytesPerPixel = 4; //Format32bppArgb
@@ -108,7 +80,7 @@ namespace Masterduel_TLDR_overlay.Screen
             return (lResult, meanBrightness, meanSaturation);
         }
 
-        public static void ContrastWhitePixels(Bitmap bm)
+        public static void ContrastWhitePixels(ref Bitmap bm, float threshold = 0.70f)
         {
             int bytesPerPixel = 4; //Format32bppArgb
             int maxPointerLenght = bm.Width * bm.Height * bytesPerPixel;
@@ -130,7 +102,7 @@ namespace Masterduel_TLDR_overlay.Screen
                 A = bytes[i + 3];
                 //reduce colors to true / false                
                 Color fa = Color.FromArgb(A, R, G, B);
-                if (fa.GetBrightness() > 0.70f)
+                if (fa.GetBrightness() > threshold)
                 {
                     bytes[i + 0] = 255;
                     bytes[i + 1] = 255;
@@ -182,6 +154,12 @@ namespace Masterduel_TLDR_overlay.Screen
                 HashSum = Hash.Count((x) => x);
                 Resolution = new Size(size.w, size.h);
             }
+            public ImageHash(Bitmap bm, int size)
+            {
+                Hash = GetImageHash(bm, (size, size));
+                HashSum = Hash.Count((x) => x);
+                Resolution = new Size(size, size);
+            }
             public ImageHash(List<bool> hash, Size size)
             {
                 Hash = hash;
@@ -229,12 +207,32 @@ namespace Masterduel_TLDR_overlay.Screen
             }
         }
 
+        public static TextColorE GetTextColor(Bitmap bm)
+        {
+            Bitmap contrastedImage = (Bitmap)bm.Clone();
+            ContrastWhitePixels(ref contrastedImage, 0.85f);
+            ImageHash imageHash = new ImageHash(contrastedImage, Properties.SPLASH_SIZE);
+            contrastedImage.Dispose();
+
+            if (imageHash.HashSum > 10)
+            {
+                return TextColorE.White;
+            }
+            return TextColorE.Yellow;
+        }
+
+        public enum TextColorE
+        {
+            White,
+            Yellow
+        }
+
         // Private methods
         private static bool PixelMetric(Color pixel)
         {
 
             // Grey scale > 0.5
-            return ((pixel.R + pixel.G + pixel.B) / 3) <= 128;
+            return ((pixel.R + pixel.G + pixel.B) / 3) >= 128;
         }
 
         /// <summary>

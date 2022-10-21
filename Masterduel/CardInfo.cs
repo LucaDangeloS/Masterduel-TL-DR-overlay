@@ -11,6 +11,7 @@ namespace Masterduel_TLDR_overlay.Masterduel
 {
     public class CardInfo
     {
+        public bool CardNameChanged { get; set; } = false;
         public string Name { get; set; }
         public string Desc { get; set; }
         public struct SplashInfo
@@ -72,6 +73,11 @@ namespace Masterduel_TLDR_overlay.Masterduel
             }
             public override string ToString() => $"{Type}:\r\n {EffectString}"; // TODO: Capitalize
         }
+    }
+
+    public class CardNameChangedException : Exception
+    {
+        public CardNameChangedException(string message) : base(message) { }
     }
 
     [Table("cards")]

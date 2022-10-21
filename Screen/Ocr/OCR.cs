@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
 using TesseractOCR;
-
+using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
 
 namespace Masterduel_TLDR_overlay.Ocr
 {
@@ -12,8 +12,6 @@ namespace Masterduel_TLDR_overlay.Ocr
         // Public methods
         public OCR()
         {
-            //_engine = new TesseractEngine(@"./tessdata", "Nintendo", EngineMode.Default);
-            //_engine.DefaultPageSegMode = Tesseract.PageSegMode.SingleLine;
             _engine_5 = new Engine(@"./tessdata", "MasterduelEng", TesseractOCR.Enums.EngineMode.Default);
             _engine_5.DefaultPageSegMode = TesseractOCR.Enums.PageSegMode.SingleLine;
         }
@@ -27,9 +25,8 @@ namespace Masterduel_TLDR_overlay.Ocr
         public ImageAnalysis ReadImage(Bitmap bm)
         {
             string plainText;
-            ImageAnalysis ret = new ImageAnalysis();
 
-            MemoryStream ms = new MemoryStream();
+            MemoryStream ms = new ();
             bm.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
             var img = TesseractOCR.Pix.Image.LoadFromMemory(ms);
             
@@ -37,11 +34,10 @@ namespace Masterduel_TLDR_overlay.Ocr
             plainText = processesImg.Text;
             processesImg.Dispose();
             
-            ret.Text = ProcessExclusions(plainText);
-
-            return ret;
+            return new ImageAnalysis(ProcessExclusions(plainText));
         }
 
+        // Private methods
         private static string ProcessExclusions(string rawString)
         {
             // Evil Twin
@@ -77,15 +73,16 @@ namespace Masterduel_TLDR_overlay.Ocr
             Debug.WriteLine("OCR result: " + ret);
             return ret;
         }
+
     }
 
     public struct ImageAnalysis
     {
         public string Text;
 
-        public ImageAnalysis()
+        public ImageAnalysis(string text = "")
         {
-            Text = "";
+            Text = text;
         }
     }
 }
