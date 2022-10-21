@@ -294,6 +294,7 @@ namespace Masterduel_TLDR_overlay
             {
                 throw new CardNameChangedException("The card name is not it's original");
             }
+            ContrastWhitePixels(ref bm, 0.7f, true);
             Invoke(new Action(() =>
             {
                 // Debugging purposes

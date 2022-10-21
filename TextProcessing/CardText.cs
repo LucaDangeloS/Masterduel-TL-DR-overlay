@@ -57,6 +57,16 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                         return filteredStr.Value.Trim();
                     }
                     break;
+                    
+                case Trim_aggressiveness.Aggresive:
+                    re = new Regex("[a-zA-Z0-9 ]*([\\-=# ]*)", RegexOptions.Multiline);
+                    m = re.Match(str);
+                    filteredStr = m.Groups[0];
+                    if (filteredStr.Success)
+                    {
+                        str = filteredStr.Value.Trim();
+                    }
+                    break;
             }
 
             return str.Substring(floor_agr_int, len - agr_int - floor_agr_int);

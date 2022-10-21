@@ -80,7 +80,7 @@ namespace Masterduel_TLDR_overlay.Screen
             return (lResult, meanBrightness, meanSaturation);
         }
 
-        public static void ContrastWhitePixels(ref Bitmap bm, float threshold = 0.70f)
+        public static void ContrastWhitePixels(ref Bitmap bm, float threshold = 0.70f, bool invert = false)
         {
             int bytesPerPixel = 4; //Format32bppArgb
             int maxPointerLenght = bm.Width * bm.Height * bytesPerPixel;
@@ -102,7 +102,7 @@ namespace Masterduel_TLDR_overlay.Screen
                 A = bytes[i + 3];
                 //reduce colors to true / false                
                 Color fa = Color.FromArgb(A, R, G, B);
-                if (fa.GetBrightness() > threshold)
+                if ((!invert && fa.GetBrightness() > threshold) || (invert && fa.GetBrightness() < threshold))
                 {
                     bytes[i + 0] = 255;
                     bytes[i + 1] = 255;
