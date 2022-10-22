@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 using Masterduel_TLDR_overlay.Masterduel;
 using System.Runtime.Caching;
 using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
-using System.Security.Cryptography.X509Certificates;
-using System.Diagnostics;
-using System.Drawing.Text;
 
 namespace Masterduel_TLDR_overlay.Caching
 {
@@ -47,6 +44,7 @@ namespace Masterduel_TLDR_overlay.Caching
         public void AddToCache(ImageHash hash, CardInfo? card)
         {
             var bin = hash.HashSum / MaxPixelDiff;
+            // Check it if breks if a card with nothing on it is cached
 
             if (card == null)
             {

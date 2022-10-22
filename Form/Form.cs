@@ -210,7 +210,11 @@ namespace Masterduel_TLDR_overlay
             {
                 card = await FecthAPI(baseCoords, hash);
                 if (card == null) return null;
-                if (card.CardNameIsChanged) return card;
+                if (card.CardNameIsChanged)
+                {
+                    splashCache.AddToCache(hash, card);
+                    return card;
+                }
             }
 
             if (card != null)
