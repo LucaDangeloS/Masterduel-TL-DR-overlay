@@ -22,15 +22,22 @@ namespace Masterduel_TLDR_overlay.Ocr
         /// <param name="bm">The <see cref="Bitmap"/> object from which the OCR algorith will read.</param>
         /// <returns>Returns an <see cref="ImageAnalysis"/> object, containing among other things the text recognized from the image. 
         /// If no text was recognized the <see cref="ImageAnalysis.Text"/> field will countain an empty string.</returns>
-        public ImageAnalysis ReadImage(Bitmap bm)
+        public ImageAnalysis ReadImage(Bitmap bm, bool multiline = false)
         {
             string plainText;
 
             MemoryStream ms = new ();
             bm.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
             var img = TesseractOCR.Pix.Image.LoadFromMemory(ms);
-            
-            var processesImg = _engine_5.Process(img);
+            Page processesImg;
+
+            if (!multiline)
+            {
+                processesImg = _engine_5.Process(img);
+            } else
+            {
+                processesImg = _engine_5.Process(img, TesseractOCR.Enums.PageSegMode.SingleBlock);
+            }
             plainText = processesImg.Text;
             processesImg.Dispose();
             

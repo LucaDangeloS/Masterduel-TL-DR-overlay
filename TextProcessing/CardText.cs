@@ -1,4 +1,6 @@
 ﻿using Masterduel_TLDR_overlay.Masterduel;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -12,6 +14,14 @@ namespace Masterduel_TLDR_overlay.TextProcessing
     /// </summary>
     internal static class CardText
     {
+        private static readonly string dir = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string[] trueN = TextUtils.FileParser(dir + "/TrueNegations_stripped.txt");
+        private static readonly string[] falseN = TextUtils.FileParser(dir + "/FalseNegations_stripped.txt");
+
+        // Get term vectors from files
+        private static readonly Dictionary<string, int> TrueVec = GetTermVectorFromFile(trueN);
+        private static readonly Dictionary<string, int> FalseVec = GetTermVectorFromFile(falseN);
+
         // Public methods
 
         /// <summary>
@@ -140,7 +150,8 @@ namespace Masterduel_TLDR_overlay.TextProcessing
                 "cannot be affected by",
                 "cannot be destroyed",
                 "cannot target",
-                "cannot be targeted"
+                "cannot be targeted",
+                "[^.]*?would be destroyed[^.]*?(instead|not)[^.]*",
             };
             public static string TRUE_BANISH = "((opponent|on the field)[^.]{0,30}?banish[^ed]|banish[^ed][^.]{0,30}?(opponent|on the field))";
             public static string[] TRUE_DESTRUCTIONS =
@@ -158,16 +169,8 @@ namespace Masterduel_TLDR_overlay.TextProcessing
 
         private static List<Effect> GetCardNegations(List<string> matches)
         {
-            string dir = AppDomain.CurrentDomain.BaseDirectory;
             Dictionary<string, int> QueryVec;
             List<Effect> effectsList = new();
-
-            string[] trueN = TextUtils.FileParser(dir + "/TrueNegations_stripped.txt");
-            string[] falseN = TextUtils.FileParser(dir + "/FalseNegations_stripped.txt");
-
-            // Get term vectors from files
-            var TrueVec = GetTermVectorFromFile(trueN);
-            var FalseVec = GetTermVectorFromFile(falseN);
 
             // Check for negates
             foreach (string sentence in matches)

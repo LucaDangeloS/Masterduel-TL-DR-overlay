@@ -10,11 +10,11 @@ namespace Masterduel_TLDR_overlay.Overlay
     internal class Icons
     {
         protected class OverlayIconStart : RelPos
-        {
-            public float X_REL_INIT_POS => 0.099f; //174 - 158
-            public float Y_REL_INIT_POS => 0.312f; //320 - 281
-            public float X_REL_END_POS => 0.116f; //202 - 186
-            public float Y_REL_END_POS => 0.336f; //342 - 303
+        {  // 28 x 28
+            public float X_REL_INIT_POS => 0.11375f; //182
+            public float Y_REL_INIT_POS => 0.3644f; //358
+            public float X_REL_END_POS => 0.1312f; // + 28
+            public float Y_REL_END_POS => 0.3955f; // + 28
         };
     }
 }

@@ -35,7 +35,7 @@ namespace Masterduel_TLDR_overlay.Api
         /// <returns>Returns a <see cref="Task"/> object with a <see cref="CardInfo"/> <see cref="List"/> for the cards found by the search.</returns>
         public static async Task<List<CardInfo>> GetCardByNameAsync(string cardName)
         {
-            string fuzzyPath = BASE_URL + "/?fname=" +  cardName;
+            string fuzzyPath = BASE_URL + "/?sort=name&fname=" +  cardName;
             HttpResponseMessage response = await client.GetAsync(fuzzyPath);
             response.EnsureSuccessStatusCode();
             JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
@@ -53,7 +53,7 @@ namespace Masterduel_TLDR_overlay.Api
 
         public static async Task<List<CardInfo>> GetCardByExactNameAsync(string cardName)
         {
-            string exactPath = BASE_URL + "/?name=" + cardName;
+            string exactPath = BASE_URL + "/?sort=name&name=" + cardName;
             HttpResponseMessage response = await client.GetAsync(exactPath);
             response.EnsureSuccessStatusCode();
             JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
@@ -70,6 +70,25 @@ namespace Masterduel_TLDR_overlay.Api
             
             return cards;
         }
+        public static async Task<List<CardInfo>> GetCardDescAsync(string cardDesc)
+        {
+            string exactPath = BASE_URL + "/?sort=name&desc=" + cardDesc;
+            HttpResponseMessage response = await client.GetAsync(exactPath);
+            response.EnsureSuccessStatusCode();
+            JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
+
+            if (res == null) throw new NoCardsFoundException("No cards were found with DESC: " + cardDesc);
+
+            List<CardInfo> cards = new();
+
+            foreach (JsonCardInfo jsonCard in res.Data)
+            {
+                cards.Add(CardAPIObjConverter.ConvertToCardInfo(jsonCard));
+            }
+            if (cards.Count == 0) throw new NoCardsFoundException("No cards were found with DESC: " + cardDesc);
+
+            return cards;
+        }
 
         public static async Task<List<CardInfo>> TryGetCardNameAsync(string cardName)
         {
@@ -83,8 +102,8 @@ namespace Masterduel_TLDR_overlay.Api
             
             return await GetCardByNameAsync(cardName);
         }
+
     }
-    
     
 
     class JsonCardResponse

@@ -11,7 +11,7 @@ namespace Masterduel_TLDR_overlay.Masterduel
 {
     public class CardInfo
     {
-        public bool CardNameChanged { get; set; } = false;
+        public bool CardNameIsChanged { get; set; } = false;
         public string Name { get; set; }
         public string Desc { get; set; }
         public struct SplashInfo
@@ -75,9 +75,9 @@ namespace Masterduel_TLDR_overlay.Masterduel
         }
     }
 
-    public class CardNameChangedException : Exception
+    public class CardNameIsChangedException : Exception
     {
-        public CardNameChangedException(string message) : base(message) { }
+        public CardNameIsChangedException(string message) : base(message) { }
     }
 
     [Table("cards")]

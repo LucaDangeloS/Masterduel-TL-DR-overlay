@@ -21,7 +21,7 @@ namespace Masterduel_TLDR_overlay.Caching
         public CardInfo? LastLookup;
         private readonly int MaxPixelDiff;
         private readonly int Bins;
-        private int MaxCacheSize = 40;
+        private int MaxCacheSize = PropertiesLoader.Instance.Properties.MAX_CACHE_SIZE;
 
         public MemCache(int maxPixelDiff, int splashSize)
         {

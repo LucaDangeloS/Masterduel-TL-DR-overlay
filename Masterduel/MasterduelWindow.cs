@@ -43,6 +43,13 @@ namespace Masterduel_TLDR_overlay.Masterduel
                 public float X_REL_END_POS => 0.2156f;
                 public float Y_REL_END_POS => 0.460f;
             };
+            protected class DescRelPos : RelPos
+            {
+                public float X_REL_INIT_POS => 0.01625f;
+                public float Y_REL_INIT_POS => 0.4655f;
+                public float X_REL_END_POS => 0.20f;
+                public float Y_REL_END_POS => 0.58f;
+            }
             protected class DeckEditorTextRelPos : RelPos
             {
                 public float X_REL_INIT_POS => 0.03f;
@@ -105,6 +112,12 @@ namespace Masterduel_TLDR_overlay.Masterduel
             public static (Point, Point) GetCardTitleCoords((Point, Point) wp)
             {
                 RelPos pos = new TextRelPos();
+                return GetPosCoords(wp, pos);
+            }
+
+            public static (Point, Point) GetCardDescCoords((Point, Point) wp)
+            {
+                RelPos pos = new DescRelPos();
                 return GetPosCoords(wp, pos);
             }
 

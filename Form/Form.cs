@@ -210,7 +210,7 @@ namespace Masterduel_TLDR_overlay
             {
                 card = await FecthAPI(baseCoords, hash);
                 if (card == null) return null;
-                if (card.CardNameChanged) return card;
+                if (card.CardNameIsChanged) return card;
             }
 
             if (card != null)
@@ -251,15 +251,21 @@ namespace Masterduel_TLDR_overlay
             }
             try
             {
-                card = await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Light);
-                card ??= await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Moderate);
-                card ??= await CheckText(bm, TextProcessing.CardText.Trim_aggressiveness.Aggresive);
+                card = await CheckCardName(bm, TextProcessing.CardText.Trim_aggressiveness.Light);
+                card ??= await CheckCardName(bm, TextProcessing.CardText.Trim_aggressiveness.Moderate);
+                card ??= await CheckCardName(bm, TextProcessing.CardText.Trim_aggressiveness.Aggresive);
             }
-            catch (CardNameChangedException)
+            catch (CardNameIsChangedException)
             {
-                card = new();
-                card.CardNameChanged = true;
-                Debug.Write("This card has it's name changed! Therefor ethe analysis won't work.");
+                area = MasterduelWindow.Window.GetCardDescCoords(baseCoords);
+                bm = TakeScreenshotFromArea(area);
+                card = await CheckCardDescription(bm);
+                if (card == null)
+                {
+                    card = new();
+                    card.CardNameIsChanged = true;
+                }
+                Debug.Write("This card has it's name changed! Therefore ethe analysis may not work.");
                 return card;
             }
 
@@ -286,13 +292,13 @@ namespace Masterduel_TLDR_overlay
             return true;
         }
 
-        private async Task<CardInfo?> CheckText(Bitmap bm, 
+        private async Task<CardInfo?> CheckCardName(Bitmap bm, 
             TextProcessing.CardText.Trim_aggressiveness aggressiveness)
         {
             // Check if the card name isn't yellow
             if (GetTextColor(bm) == TextColorE.Yellow)
             {
-                throw new CardNameChangedException("The card name is not it's original");
+                throw new CardNameIsChangedException("The card name is not it's original");
             }
             ContrastWhitePixels(ref bm, 0.7f, true);
             Invoke(new Action(() =>
@@ -312,17 +318,13 @@ namespace Masterduel_TLDR_overlay
             Debug.WriteLine("API Text: " + reformattedCardName);
             if (reformattedCardName == "") return null;
 
+            // Fetch the API
             try
             {
                 List<CardInfo> apiRes;
-                if (aggressiveness > TextProcessing.CardText.Trim_aggressiveness.Moderate)
-                {
-                    apiRes = await CardsAPI.GetCardByNameAsync(reformattedCardName);
-                }
-                else
-                {
-                    apiRes = await CardsAPI.TryGetCardNameAsync(reformattedCardName);
-                }
+                
+                apiRes = await CardsAPI.TryGetCardNameAsync(reformattedCardName);
+                
                 // Check if there aren't many possible cards for the query
                 if (!CheckCardAmount(apiRes))
                 {
@@ -345,9 +347,56 @@ namespace Masterduel_TLDR_overlay
             return null;
         }
 
-        private bool CheckCardAmount(List<CardInfo> apiRes)
+        private async Task<CardInfo?> CheckCardDescription(Bitmap bm)
         {
-            if (apiRes.Count > Properties.MAX_POSSIBLE_CARDS_FROM_API) return false;
+            Invoke(new Action(() =>
+            {
+                // Debugging purposes
+                pictureBox1.Image = (Image)bm.Clone();
+            }));
+            ContrastWhitePixels(ref bm, 0.6f, true);
+            // Run OCR on image
+            ImageAnalysis result = ocr.ReadImage(bm, true);
+            result.Text = result.Text.Replace('\n', ' ');
+            
+            Invoke(new Action(() =>
+            {
+                // Debugging purposes
+                endText.Text = result.Text;
+            }));
+
+            // Fetch the API
+            try
+            {
+                List<CardInfo> apiRes;
+                apiRes = await CardsAPI.GetCardDescAsync(result.Text);
+
+                if (!CheckCardAmount(apiRes, 1))
+                {
+                    Debug.WriteLine($"Too many possible cards in the query {result.Text}");
+                    return null;
+                }
+
+                CardInfo res = TextProcessing.CardText.GetDescFeatures(apiRes.First());
+                return res;
+            }
+            catch (HttpRequestException excp)
+            {
+                Debug.WriteLine(excp.Message);
+            }
+            catch (NoCardsFoundException excp)
+            {
+                Debug.WriteLine(excp.Message);
+            }
+
+            return null;
+        }
+
+        private bool CheckCardAmount(List<CardInfo> apiRes, int maxAmount = 0)
+        {
+            if (maxAmount <= 0) maxAmount = Properties.MAX_POSSIBLE_CARDS_FROM_API;
+            
+            if (apiRes.Count > maxAmount) return false;
             return true;
         }
 
