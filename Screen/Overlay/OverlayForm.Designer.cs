@@ -1,6 +1,6 @@
 ﻿namespace Masterduel_TLDR_overlay.Overlay
 {
-    partial class OverlayForm : Form
+    partial class OverlayForm : MainForm
     {
         /// <summary>
         /// Required designer variable.

@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 
+namespace Masterduel_TLDR_overlay;
+
 public sealed class PropertiesLoader
 {
     private readonly static PropertiesLoader _instance = new();
@@ -26,7 +28,7 @@ public sealed class PropertiesLoader
                 dynamic jsonArray = JsonConvert.DeserializeObject(json);
                 foreach (Newtonsoft.Json.Linq.JProperty key in jsonArray)
                 {
-                    data.Add(key.Name, (string) key.Value);
+                    data.Add(key.Name, (string)key.Value);
                 }
             }
 
@@ -45,9 +47,11 @@ public sealed class PropertiesLoader
         }
         catch (Exception)
         {
-            try {
+            try
+            {
                 File.Delete(PropertiesFileName);
-            } catch (FileNotFoundException) { }
+            }
+            catch (FileNotFoundException) { }
 
             prop = new PropertiesC();
             var str = JsonConvert.SerializeObject(prop.Serialize(), Formatting.Indented);
@@ -97,3 +101,4 @@ public sealed class PropertiesLoader
             prop.MAX_CACHE_SIZE > 0;
     }
 }
+

@@ -5,4 +5,7 @@
 - [X] Text description processing module
 - [ ] UI module
 - [x] Create main loop/event driven logic
-- [ ] Add case when canr name is changed (yellow text)
+- [x] Add case when card name is changed (yellow text)
+- [ ] Make compatible with Linux
+	- [ ] Switch to Avalonia UI
+	- [ ] Find workaround for Window Handles (get the window coordinates and size)

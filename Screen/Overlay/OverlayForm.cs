@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace Masterduel_TLDR_overlay.Overlay
 {
-    public partial class OverlayForm : Form
+    public partial class OverlayForm : MainForm
     {
         public OverlayForm()
         {
