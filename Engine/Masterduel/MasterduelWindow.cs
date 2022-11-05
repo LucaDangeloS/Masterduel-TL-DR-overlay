@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Masterduel_TLDR_overlay.Masterduel;
 
 /// <summary>
-///    This is a sttatic class.
+///    This is a static class.
 /// </summary>
 internal static class MasterduelWindow
 {
@@ -55,7 +55,7 @@ internal static class MasterduelWindow
             public float X_REL_INIT_POS => 0.03f;
             public float Y_REL_INIT_POS => 0.11f;
             public float X_REL_END_POS => 0.211f;
-            public float Y_REL_END_POS => 0.155f;
+            public float Y_REL_END_POS => 0.160f;
         };
         protected class SplashRelPos : RelPos
         {

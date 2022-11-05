@@ -17,7 +17,7 @@ using static Masterduel_TLDR_overlay.Api.JsonCardResponse;
 namespace Masterduel_TLDR_overlay.Api;
 
 /// <summary>
-///    This is a sttatic class.
+///    This is a static class.
 /// </summary>
 internal static class CardsAPI
 {

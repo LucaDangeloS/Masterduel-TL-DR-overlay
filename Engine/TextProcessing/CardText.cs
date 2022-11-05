@@ -11,7 +11,7 @@ using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
 namespace Masterduel_TLDR_overlay.TextProcessing;
 
 /// <summary>
-///    This is a sttatic class.
+///    This is a static class.
 /// </summary>
 internal static class CardText
 {
@@ -33,6 +33,7 @@ internal static class CardText
     /// <returns>Returns the string with the cleaned up and trimmed card name.</returns>
     static public string TrimCardName(string name, Trim_aggressiveness aggressiveness)
     {
+        Debug.WriteLine("Card name: " + name);
         if (aggressiveness == Trim_aggressiveness.None) return name;
             
         StringBuilder sb = new();
@@ -40,7 +41,7 @@ internal static class CardText
         int floor_agr_int = (int) Math.Ceiling((double)agr_int / 2);
 
         sb.Append(TextUtils.StripSpecialCharacters(name, "=[]();|_\\"));
-        string str = sb.ToString();
+        string str = sb.ToString().Replace("—", "-");
         int len = str.Length;
 
         if (len <= agr_int * 3)
@@ -76,6 +77,7 @@ internal static class CardText
                 if (filteredStr.Success)
                 {
                     str = filteredStr.Value.Trim();
+                    len = str.Length;
                 }
                 break;
         }

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace Masterduel_TLDR_overlay.Screen;
 
 /// <summary>
-///    This is a sttatic class.
+///    This is a static class.
 /// </summary>
 public static class ImageProcessing
 {

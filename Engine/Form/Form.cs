@@ -17,15 +17,14 @@ public partial class MainForm : System.Windows.Forms.Form
     private readonly Logger _logger = Logger.GetLogger();
     private CardInfo? lastCardSeen = null;
     private readonly OCR ocr = new();
-
+    private readonly bool _dbCaching = true;
+    private readonly bool _memCaching = true;
+    private readonly bool _skipDuelScreenCheck = true;
+    private readonly bool _skipCardInScreenCheck = true;
+    
     public MainForm()
     {
         InitializeComponent();
-    }
-
-    private void label1_Click(object sender, EventArgs e)
-    {
-
     }
 
     private void StartLoop(object sender, EventArgs e)
@@ -147,7 +146,7 @@ public partial class MainForm : System.Windows.Forms.Form
         Bitmap bm;
 
         // Check if in duel screen
-        if (!CheckIfInDuelScreen(baseCoords))
+        if (!_skipDuelScreenCheck && !CheckIfInDuelScreen(baseCoords))
         {
             // DEBUG
             Debug.WriteLine("Skipping card analysis");
@@ -161,10 +160,11 @@ public partial class MainForm : System.Windows.Forms.Form
         bm = TakeScreenshotFromArea(area.Item1, area.Item2);
         var size = db.SplashSize;
         var hash = new ImageHash(bm, size);
+        bm.Dispose();
         CardInfo? card = null;
 
         // See if it's cached in memory
-        if (splashCache.CheckInCache(hash))
+        if (_memCaching && splashCache.CheckInCache(hash))
         {
             // DEBUG
             Debug.WriteLine("Got card cached from Memory");
@@ -175,13 +175,10 @@ public partial class MainForm : System.Windows.Forms.Form
         }
 
 
-        // See if it's in local db
-        card = db.GetCardBySplash(hash, precision);
-
-        bm.Dispose();
-
-        if (card != null)
+        if (card != null && _dbCaching)
         {
+            // See if it's in local db
+            card = db.GetCardBySplash(hash, precision);
             // DEBUG
             Debug.WriteLine("Got card cached Local DB");
             splashCache.AddToCache(hash, card);
@@ -189,7 +186,7 @@ public partial class MainForm : System.Windows.Forms.Form
         }
 
         // Ultimately, Fecth the API
-        if (CheckIfCardInScreen(baseCoords))
+        if (_skipCardInScreenCheck || CheckIfCardInScreen(baseCoords))
         {
             card = await FecthAPI(baseCoords, hash);
             if (card == null) return null;
@@ -207,9 +204,12 @@ public partial class MainForm : System.Windows.Forms.Form
             card.SetSplash(hash);
             db.AddCard(card);
         }
-        // DEBUG
-        Debug.WriteLine("Caching card into Memory");
-        splashCache.AddToCache(hash, card);
+        if (_memCaching)
+        {
+            // DEBUG
+            Debug.WriteLine("Caching card into Memory");
+            splashCache.AddToCache(hash, card);
+        }
 
         return card;
     }

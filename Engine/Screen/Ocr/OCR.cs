@@ -7,6 +7,7 @@ namespace Masterduel_TLDR_overlay.Ocr;
 internal class OCR
 {
     private Engine _engine_5;
+    private readonly bool _isDebug = true;
 
     // Public methods
     public OCR()
@@ -26,6 +27,10 @@ internal class OCR
         string plainText;
 
         MemoryStream ms = new ();
+        if (_isDebug)
+        {
+            bm.Save("lastCheck.png");
+        }
         bm.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
         var img = TesseractOCR.Pix.Image.LoadFromMemory(ms);
         Page processesImg;
@@ -39,7 +44,7 @@ internal class OCR
         }
         plainText = processesImg.Text;
         processesImg.Dispose();
-            
+
         return new ImageAnalysis(ProcessExclusions(plainText));
     }
 

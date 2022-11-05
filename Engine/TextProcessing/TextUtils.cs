@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Masterduel_TLDR_overlay.TextProcessing;
 
 /// <summary>
-///    This is a sttatic class.
+///    This is a static class.
 /// </summary>
 internal static class TextUtils
 {
