@@ -41,7 +41,7 @@ internal static class CardText
         int floor_agr_int = (int) Math.Ceiling((double)agr_int / 2);
 
         sb.Append(TextUtils.StripSpecialCharacters(name, "=[]();|_\\"));
-        string str = sb.ToString().Replace("—", "-");
+        string str = sb.ToString().Replace('—', '-');
         int len = str.Length;
 
         if (len <= agr_int * 3)

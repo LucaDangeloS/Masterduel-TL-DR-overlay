@@ -19,8 +19,8 @@ public partial class MainForm : System.Windows.Forms.Form
     private readonly OCR ocr = new();
     private readonly bool _dbCaching = true;
     private readonly bool _memCaching = true;
-    private readonly bool _skipDuelScreenCheck = true;
-    private readonly bool _skipCardInScreenCheck = true;
+    private readonly bool _skipDuelScreenCheck = false;
+    private readonly bool _skipCardInScreenCheck = false;
     
     public MainForm()
     {
