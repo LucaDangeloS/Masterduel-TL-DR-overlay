@@ -5,12 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TLDR_Masterduel_Overlay"
         mc:Ignorable="d"
-        Title="MainWindow" Height="180" MinHeight="180" Width="400" MinWidth="400" SizeToContent="Height">
+        Title="TLDR Overlay" Height="200" MinHeight="200" Width="400" MinWidth="400" SizeToContent="Height">
     <Grid Name="Grid" RenderTransformOrigin="0.5,0.5" Margin="10,10,10,10">
         <Button Name="StartButton" Content="Start" Margin="10,10,0,0" VerticalAlignment="Top" Click="Start_click" HorizontalAlignment="Left" Width="60"/>
         <Button Name="StopButton" Content="Stop" Margin="0,10,10,0" VerticalAlignment="Top" Click="Stop_click" HorizontalAlignment="Right" Width="60"/>
-        <CheckBox Name="ShowLog"  Content="Console Log" HorizontalAlignment="Left" Margin="10,89,0,0" VerticalAlignment="Top" Height="15" Checked="ShowLogCheckBox" Unchecked="ShowLogCheckBox"/>
-        <TextBox Name="ConsoleLog" TextWrapping="Wrap" Margin="0,109,0,0" Visibility="Collapsed" VerticalAlignment="Stretch" MinHeight="130"/>
+        <CheckBox Name="ShowLogCB"  Content="Console Log" HorizontalAlignment="Left" Margin="10,119,0,0" VerticalAlignment="Top" Height="15" Checked="ToggleShowLogCheckBox" Unchecked="ToggleShowLogCheckBox"/>
+        <TextBox Name="ConsoleLog" TextWrapping="Wrap" Margin="0,139,0,0" Visibility="Collapsed" MinHeight="130"/>
+        <CheckBox x:Name="MemCacheCB"  Content="Disable Temporal Cache" HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Height="15" Checked="ToggleMemoryCacheCheckBox" Unchecked="ToggleMemoryCacheCheckBox"/>
+        <CheckBox x:Name="PersistentCacheCB"  Content="Disable Persistent Cache" HorizontalAlignment="Left" Margin="10,65,0,0" VerticalAlignment="Top" Height="15" Checked="TogglePersistentCacheCheckBox" Unchecked="TogglePersistentCacheCheckBox"/>
 
     </Grid>
 </Window>
