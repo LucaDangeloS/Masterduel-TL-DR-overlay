@@ -75,5 +75,16 @@ namespace TLDR_Masterduel_Overlay
                 Debug.WriteLine("Persistent Cache: Disabled");
             }
         }
+
+        private void ClearMemCache(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine("Clearing Temporal cache");
+        }
+
+        private void ClearPersistentCache(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine("Clearing Persistent cache");
+        }
+
     }
 }
