@@ -8,6 +8,7 @@ using Masterduel_TLDR_overlay.Caching;
 using Masterduel_TLDR_overlay.Windows;
 using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
 using static Masterduel_TLDR_overlay.PropertiesLoader;
+using Masterduel_TLDR_overlay.Exceptions;
 
 namespace Masterduel_TLDR_overlay;
 
@@ -140,7 +141,7 @@ public partial class MainForm : System.Windows.Forms.Form
         return detectedCard;
     }
 
-    private async Task<CardInfo?> CheckCardInScreen((Point, Point) baseCoords, MemCache splashCache, LocalDB db, float precision)
+    private async Task<CardInfo> CheckCardInScreen((Point, Point) baseCoords, MemCache splashCache, LocalDB db, float precision)
     {
         (Point, Point) area;
         Bitmap bm;
@@ -150,7 +151,7 @@ public partial class MainForm : System.Windows.Forms.Form
         {
             // DEBUG
             Debug.WriteLine("Skipping card analysis");
-            return null;
+            throw new DuelScreenCheckException();
         }
 
         // Get splash area coords
@@ -189,7 +190,7 @@ public partial class MainForm : System.Windows.Forms.Form
         if (_skipCardInScreenCheck || CheckIfCardInScreen(baseCoords))
         {
             card = await FecthAPI(baseCoords, hash);
-            if (card == null) return null;
+            if (card == null) throw new DuelScreenCheckException();
             if (card.CardNameIsChanged)
             {
                 splashCache.AddToCache(hash, card);

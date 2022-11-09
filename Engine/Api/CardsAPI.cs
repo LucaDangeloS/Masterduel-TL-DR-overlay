@@ -13,6 +13,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static Masterduel_TLDR_overlay.Api.JsonCardResponse;
+using Masterduel_TLDR_overlay.Exceptions;
 
 namespace Masterduel_TLDR_overlay.Api;
 
@@ -39,7 +40,7 @@ internal static class CardsAPI
         HttpResponseMessage response = await client.GetAsync(fuzzyPath);
         response.EnsureSuccessStatusCode();
         JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
-        if (res == null) throw new NoCardsFoundException("No cards were found with name: " + cardName);
+        if (res == null) throw new NoCardsFoundException(cardName);
 
         List<CardInfo> cards = new();
 
@@ -58,7 +59,7 @@ internal static class CardsAPI
         response.EnsureSuccessStatusCode();
         JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
             
-        if (res == null) throw new NoCardsFoundException("No cards were found with name: " + cardName);
+        if (res == null) throw new NoCardsFoundException(cardName);
 
         List<CardInfo> cards = new ();
             
@@ -66,7 +67,7 @@ internal static class CardsAPI
         {
             cards.Add(CardAPIObjConverter.ConvertToCardInfo(jsonCard));
         }
-        if (cards.Count == 0) throw new NoCardsFoundException("No cards were found with name: " + cardName);
+        if (cards.Count == 0) throw new NoCardsFoundException(cardName);
             
         return cards;
     }
@@ -77,7 +78,7 @@ internal static class CardsAPI
         response.EnsureSuccessStatusCode();
         JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
 
-        if (res == null) throw new NoCardsFoundException("No cards were found with DESC: " + cardDesc);
+        if (res == null) throw new NoCardsFoundException(cardDesc);
 
         List<CardInfo> cards = new();
 
@@ -85,7 +86,7 @@ internal static class CardsAPI
         {
             cards.Add(CardAPIObjConverter.ConvertToCardInfo(jsonCard));
         }
-        if (cards.Count == 0) throw new NoCardsFoundException("No cards were found with DESC: " + cardDesc);
+        if (cards.Count == 0) throw new NoCardsFoundException(cardDesc);
 
         return cards;
     }
@@ -123,9 +124,3 @@ class CardAPIObjConverter
         return new CardInfo(res.Name, res.Desc);
     }
 }
-    
-class NoCardsFoundException : Exception
-{
-    public NoCardsFoundException(string message): base(message) { }
-}
-
