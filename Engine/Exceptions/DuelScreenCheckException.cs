@@ -8,7 +8,7 @@ namespace Masterduel_TLDR_overlay.Exceptions
 {
     class DuelScreenCheckException : Exception
     {
-        private static string DEFAULT_MESSAGE = "No duel screen has been detected.";
+        private static readonly string DEFAULT_MESSAGE = "No duel screen has been detected.";
         public DuelScreenCheckException(string message) : base(message) { }
         public DuelScreenCheckException() : base(DEFAULT_MESSAGE) { }
     }

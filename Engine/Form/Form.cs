@@ -167,26 +167,33 @@ public partial class MainForm : System.Windows.Forms.Form
         // See if it's cached in memory
         if (_memCaching && splashCache.CheckInCache(hash))
         {
-            // DEBUG
-            Debug.WriteLine("Got card cached from Memory");
             card = splashCache.LastLookup;
-                
+
+            if (card != null)
+            {
+                Debug.WriteLine("Got card cached from Memory");
+                return card;
+            }
             // TODO: Reevaluate when card is yellow text card
-            return splashCache.LastLookup;
         }
 
-
-        if (card != null && _dbCaching)
+        if (_dbCaching)
         {
             // See if it's in local db
             card = db.GetCardBySplash(hash, precision);
-            // DEBUG
-            Debug.WriteLine("Got card cached Local DB");
-            splashCache.AddToCache(hash, card);
-            return card;
+
+            if (card != null)
+            {
+                Debug.WriteLine("Got card cached Local DB");
+                if (_memCaching)
+                {
+                    splashCache.AddToCache(hash, card);
+                }
+                return card;
+            }
         }
 
-        // Ultimately, Fecth the API
+        // Ultimately, Fecth the API (TODO) 
         if (_skipCardInScreenCheck || CheckIfCardInScreen(baseCoords))
         {
             card = await FecthAPI(baseCoords, hash);
