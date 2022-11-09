@@ -84,11 +84,6 @@ public class CardInfo
     }
 }
 
-public class CardNameIsChangedException : Exception
-{
-    public CardNameIsChangedException(string message) : base(message) { }
-}
-
 [Table("cards")]
 public class CardInfoDB
 {

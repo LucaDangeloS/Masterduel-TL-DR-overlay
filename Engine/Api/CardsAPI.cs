@@ -48,7 +48,7 @@ internal static class CardsAPI
         {
             cards.Add(CardAPIObjConverter.ConvertToCardInfo(jsonCard));
         }
-
+        if (cards.Count == 0) throw new NoCardsFoundException(cardName);
         return cards;
     }
 
@@ -77,16 +77,15 @@ internal static class CardsAPI
         HttpResponseMessage response = await client.GetAsync(exactPath);
         response.EnsureSuccessStatusCode();
         JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
-
-        if (res == null) throw new NoCardsFoundException(cardDesc);
-
         List<CardInfo> cards = new();
+
+        if (res == null) return cards;
+
 
         foreach (JsonCardInfo jsonCard in res.Data)
         {
             cards.Add(CardAPIObjConverter.ConvertToCardInfo(jsonCard));
         }
-        if (cards.Count == 0) throw new NoCardsFoundException(cardDesc);
 
         return cards;
     }
@@ -98,10 +97,13 @@ internal static class CardsAPI
             var res = await GetCardByExactNameAsync(cardName);
             return res;
         }
-        catch (NoCardsFoundException) { }
+        catch (NoCardsFoundException)
+        {
+            return await GetCardByNameAsync(cardName);
+        }
         catch (HttpRequestException) { }
-            
-        return await GetCardByNameAsync(cardName);
+
+        throw new NoCardsFoundException(cardName);
     }
 
 }

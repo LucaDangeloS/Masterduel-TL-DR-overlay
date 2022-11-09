@@ -141,7 +141,7 @@ public partial class MainForm : System.Windows.Forms.Form
         return detectedCard;
     }
 
-    private async Task<CardInfo> CheckCardInScreen((Point, Point) baseCoords, MemCache splashCache, LocalDB db, float precision)
+    private async Task<CardInfo?> CheckCardInScreen((Point, Point) baseCoords, MemCache splashCache, LocalDB db, float precision)
     {
         (Point, Point) area;
         Bitmap bm;
@@ -151,7 +151,7 @@ public partial class MainForm : System.Windows.Forms.Form
         {
             // DEBUG
             Debug.WriteLine("Skipping card analysis");
-            throw new DuelScreenCheckException();
+            return null;
         }
 
         // Get splash area coords
@@ -197,10 +197,13 @@ public partial class MainForm : System.Windows.Forms.Form
         if (_skipCardInScreenCheck || CheckIfCardInScreen(baseCoords))
         {
             card = await FecthAPI(baseCoords, hash);
-            if (card == null) throw new DuelScreenCheckException();
+            if (card == null) return null;
             if (card.CardNameIsChanged)
             {
-                splashCache.AddToCache(hash, card);
+                if (_memCaching)
+                {
+                    splashCache.AddToCache(hash, card);
+                }
                 return card;
             }
         }
@@ -252,8 +255,10 @@ public partial class MainForm : System.Windows.Forms.Form
             card = await CheckCardDescription(bm);
             if (card == null)
             {
-                card = new();
-                card.CardNameIsChanged = true;
+                card = new()
+                {
+                    CardNameIsChanged = true
+                };
             }
             Debug.Write("This card has it's name changed! Therefore ethe analysis may not work.");
             return card;
