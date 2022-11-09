@@ -2,6 +2,7 @@
 using SQLiteNetExtensions.Attributes;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -72,6 +73,14 @@ public class CardInfo
             QuickEffect = isQuickEffect;
         }
         public override string ToString() => $"{Type}:\r\n {EffectString}"; // TODO: Capitalize
+
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj == null || !this.GetType().Equals(obj.GetType())) return false;
+        CardInfo obj2 = (CardInfo)obj;
+        return obj2.Name.Equals(this.Name);
     }
 }
 

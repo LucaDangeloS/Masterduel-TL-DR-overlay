@@ -85,7 +85,7 @@ public partial class MainForm : System.Windows.Forms.Form
         }
         CardInfo? cardName = await CheckCardInScreen(windowArea, cachedSplashes, db,
             Properties.COMPARISON_PRECISION);
-        if (cardName != null && cardName != lastCardSeen)
+        if (cardName != null && !cardName.Equals(lastCardSeen))
         {
             Invoke(new Action(() => {
                 string logMes = (cardName.Effects.Count == 0 ? "" : Environment.NewLine) + 
