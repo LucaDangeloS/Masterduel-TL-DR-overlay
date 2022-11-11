@@ -117,10 +117,11 @@ public partial class MainForm : System.Windows.Forms.Form
             bm.Dispose();
             detectedLP = ocrRes.Text.ToLower().Contains("lp");
         }
-           
+
         return detectedLP;
     }
-
+    // TODO: Split methods to other classes. "DuelChecks.cs" for instance.
+    // Another class named "CardRetrieval.cs" or something like that.
     private bool CheckIfCardInScreen((Point, Point) baseCoords)
     {
         ImageAnalysis ocrRes;
