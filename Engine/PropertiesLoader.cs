@@ -74,7 +74,7 @@ public sealed class PropertiesLoader
         public int MAX_PIXELS_DIFF { get; init; } = 25;
         public int SPLASH_SIZE { get; init; } = 24;
         public float COMPARISON_PRECISION { get; init; } = 0.96f;
-        public int MAX_POSSIBLE_CARDS_FROM_API { get; init; } = 5;
+        public int MAX_POSSIBLE_CARDS_FROM_API { get; init; } = 2;
         public int MAX_CACHE_SIZE { get; set; } = 40;
 
         public Dictionary<string, string> Serialize()

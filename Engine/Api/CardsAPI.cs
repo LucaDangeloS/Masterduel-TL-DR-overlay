@@ -36,7 +36,7 @@ internal static class CardsAPI
     /// <returns>Returns a <see cref="Task"/> object with a <see cref="CardInfo"/> <see cref="List"/> for the cards found by the search.</returns>
     public static async Task<List<CardInfo>> GetCardByNameAsync(string cardName)
     {
-        string fuzzyPath = BASE_URL + "/?sort=name&fname=" +  cardName;
+        string fuzzyPath = BASE_URL + "/?sort=name&fname=" + querifyURI(cardName);
         HttpResponseMessage response = await client.GetAsync(fuzzyPath);
         response.EnsureSuccessStatusCode();
         JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
@@ -54,7 +54,7 @@ internal static class CardsAPI
 
     public static async Task<List<CardInfo>> GetCardByExactNameAsync(string cardName)
     {
-        string exactPath = BASE_URL + "/?sort=name&name=" + cardName;
+        string exactPath = BASE_URL + "/?sort=name&name=" + querifyURI(cardName);
         HttpResponseMessage response = await client.GetAsync(exactPath);
         response.EnsureSuccessStatusCode();
         JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
@@ -71,9 +71,10 @@ internal static class CardsAPI
             
         return cards;
     }
+    
     public static async Task<List<CardInfo>> GetCardDescAsync(string cardDesc)
     {
-        string exactPath = BASE_URL + "/?sort=name&desc=" + cardDesc;
+        string exactPath = BASE_URL + "/?sort=name&desc=" + querifyURI(cardDesc);
         HttpResponseMessage response = await client.GetAsync(exactPath);
         response.EnsureSuccessStatusCode();
         JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
@@ -90,22 +91,40 @@ internal static class CardsAPI
         return cards;
     }
 
+    //public static async Task<List<CardInfo>> GetCardByIntersectionOfNames(string cardName)
+    //{
+    //    string exactPath = BASE_URL + "/?sort=name&name=" + cardName;
+    //    // Apparently names between & are treated as separate queries
+    //}
+
     public static async Task<List<CardInfo>> TryGetCardNameAsync(string cardName)
     {
+        List<CardInfo> response;
         try
         {
-            var res = await GetCardByExactNameAsync(cardName);
-            return res;
+            response = await GetCardByExactNameAsync(cardName);
+            return response;
         }
-        catch (NoCardsFoundException)
-        {
-            return await GetCardByNameAsync(cardName);
-        }
-        catch (HttpRequestException) { }
+        catch (Exception)  {}
 
-        throw new NoCardsFoundException(cardName);
+        response = await GetCardByNameAsync(cardName);
+        
+        return response;
     }
 
+    // Private methods
+    //private static string InteresectResponses(List<>)
+    //{
+
+    //}
+    
+    private static string querifyURI(string uri)
+    {
+        string queryString = uri;
+        queryString = queryString.Replace("&", "%26");
+
+        return queryString;
+    }
 }
     
 
