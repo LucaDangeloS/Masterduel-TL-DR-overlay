@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static Masterduel_TLDR_overlay.PropertiesLoader;
+using static TLDROverlay.PropertiesLoader;
 
-namespace Masterduel_TLDR_overlay;
+namespace TLDROverlay;
 
 public sealed class Logger
 {

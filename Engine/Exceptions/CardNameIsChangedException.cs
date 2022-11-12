@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Masterduel_TLDR_overlay.Exceptions
+namespace TLDROverlay.Exceptions
 {
     public class CardNameIsChangedException : Exception
     {

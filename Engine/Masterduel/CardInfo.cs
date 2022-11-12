@@ -1,8 +1,8 @@
 ﻿using SQLite;
 using SQLiteNetExtensions.Attributes;
-using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
+using static TLDROverlay.Screen.ImageProcessing;
 
-namespace Masterduel_TLDR_overlay.Masterduel;
+namespace TLDROverlay.Masterduel;
 
 public class CardInfo
 {

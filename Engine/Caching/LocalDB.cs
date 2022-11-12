@@ -1,12 +1,12 @@
-﻿using Masterduel_TLDR_overlay.Masterduel;
-using Masterduel_TLDR_overlay.Screen;
+﻿using TLDROverlay.Masterduel;
+using TLDROverlay.Screen;
 using SQLite;
 using SQLiteNetExtensions.Extensions;
 using System.Diagnostics;
-using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
-using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
+using static TLDROverlay.Masterduel.CardInfo;
+using static TLDROverlay.Screen.ImageProcessing;
 
-namespace Masterduel_TLDR_overlay.Caching
+namespace TLDROverlay.Caching
 {
     internal class LocalDB
     {

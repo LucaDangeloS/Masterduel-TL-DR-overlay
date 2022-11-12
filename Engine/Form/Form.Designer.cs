@@ -1,4 +1,4 @@
-﻿namespace Masterduel_TLDR_overlay;
+﻿namespace TLDROverlay;
 
 partial class MainForm
 {
@@ -48,7 +48,7 @@ partial class MainForm
         this.consoleLog.Size = new System.Drawing.Size(360, 0);
         this.consoleLog.TabIndex = 5;
         this.consoleLog.Visible = false;
-        this.consoleLog.TextChanged += new System.EventHandler(this.consoleLog_TextChanged);
+        this.consoleLog.TextChanged += new System.EventHandler(this.ConsoleLog_TextChanged);
         // 
         // startButton
         // 

@@ -4,8 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TLDROverlay.Engine", "Engine\TLDROverlay.Engine.csproj", "{65E42EEF-16D2-43A1-950F-DFE13618A474}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5CB4ED5E-9D71-4032-AA86-230AD49497A6} = {5CB4ED5E-9D71-4032-AA86-230AD49497A6}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TLDROverlay.MainInterface", "MainInterface\TLDROverlay.MainInterface.csproj", "{587A3511-D81B-49E8-8694-A14D6132D32C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TLDROverlay.WindowHandler", "WindowHandler\TLDROverlay.WindowHandler.csproj", "{5CB4ED5E-9D71-4032-AA86-230AD49497A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +26,10 @@ Global
 		{587A3511-D81B-49E8-8694-A14D6132D32C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{587A3511-D81B-49E8-8694-A14D6132D32C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{587A3511-D81B-49E8-8694-A14D6132D32C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CB4ED5E-9D71-4032-AA86-230AD49497A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CB4ED5E-9D71-4032-AA86-230AD49497A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CB4ED5E-9D71-4032-AA86-230AD49497A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CB4ED5E-9D71-4032-AA86-230AD49497A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

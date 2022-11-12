@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Masterduel_TLDR_overlay;
+namespace TLDROverlay;
 
 public sealed class PropertiesLoader
 {

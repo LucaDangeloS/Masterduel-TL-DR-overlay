@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using TesseractOCR;
 
-namespace Masterduel_TLDR_overlay.Ocr;
+namespace TLDROverlay.Ocr;
 
 internal class OCR
 {

@@ -1,8 +1,8 @@
-﻿using Masterduel_TLDR_overlay.Masterduel;
+﻿using TLDROverlay.Masterduel;
 using System.Runtime.Caching;
-using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
+using static TLDROverlay.Screen.ImageProcessing;
 
-namespace Masterduel_TLDR_overlay.Caching
+namespace TLDROverlay.Caching
 {
     internal class MemCache
     {

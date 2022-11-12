@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Masterduel_TLDR_overlay.WindowHandlers
+namespace TLDROverlay.WindowHandler
 {
-    internal interface WindowHandlerInterface
+    public interface IWindowHandler
     {
         [StructLayout(LayoutKind.Sequential)]
         public struct Boundaries
@@ -28,7 +24,7 @@ namespace Masterduel_TLDR_overlay.WindowHandlers
         public bool IsWindowCurrentlySelected();
         public bool GetLeftMousePressed();
 
-        class NoWindowFoundException : Exception
+        public class NoWindowFoundException : Exception
         {
             public NoWindowFoundException() { }
 
@@ -40,7 +36,7 @@ namespace Masterduel_TLDR_overlay.WindowHandlers
         }
 
 
-        class NoDimensionsFoundException : Exception
+        public class NoDimensionsFoundException : Exception
         {
             public NoDimensionsFoundException()
                 : base(string.Format("Could not retrieve window size and position"))

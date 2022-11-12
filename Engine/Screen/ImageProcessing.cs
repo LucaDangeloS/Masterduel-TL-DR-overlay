@@ -1,8 +1,8 @@
-﻿using static Masterduel_TLDR_overlay.PropertiesLoader;
+﻿using static TLDROverlay.PropertiesLoader;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace Masterduel_TLDR_overlay.Screen;
+namespace TLDROverlay.Screen;
 
 /// <summary>
 ///    This is a static class.

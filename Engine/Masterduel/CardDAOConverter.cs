@@ -1,7 +1,7 @@
-﻿using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
-using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
+﻿using static TLDROverlay.Masterduel.CardInfo;
+using static TLDROverlay.Screen.ImageProcessing;
 
-namespace Masterduel_TLDR_overlay.Masterduel;
+namespace TLDROverlay.Masterduel;
 
 /// <summary>
 /// This class is static.

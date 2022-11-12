@@ -1,11 +1,11 @@
-﻿using Masterduel_TLDR_overlay.Masterduel;
+﻿using TLDROverlay.Masterduel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
+using static TLDROverlay.Masterduel.CardInfo;
 
-namespace Masterduel_TLDR_overlay.TextProcessing;
+namespace TLDROverlay.TextProcessing;
 
 /// <summary>
 ///    This is a static class.
@@ -125,7 +125,7 @@ internal static class CardText
         // On-Death
 
         // General Quick-Effects
-        (matches, rest) = TextUtils.GetMatchingSentencesFromText(rest, TextRules.TRUE_QUICK_EFFECTS);
+        (matches, _) = TextUtils.GetMatchingSentencesFromText(rest, TextRules.TRUE_QUICK_EFFECTS);
         var quickEffects = GetCardEffects(Effect.EffectType.QUICK_EFFECT, matches);
         card.AddEffects(quickEffects);
 
@@ -254,25 +254,21 @@ internal static class CardText
         {
             string dir = AppDomain.CurrentDomain.BaseDirectory;
 
-            var FalseVec = new Dictionary<string, int>();
-            var TrueVec = new Dictionary<string, int>();
-            var QueryVec = new Dictionary<string, int>();
-
             //load data from txt files
             string[] falseN = TextUtils.FileParser(dir + "/FalseNegations_stripped.txt");
             string[] trueN = TextUtils.FileParser(dir + "/TrueNegations_stripped.txt");
             string[] testN = TextUtils.FileParser(dir + "/TestNegations.txt");
 
             // Get term vectors from files
-            TrueVec = GetTermVectorFromFile(trueN);
-            FalseVec = GetTermVectorFromFile(falseN);
+            Dictionary<string, int>? TrueVec = GetTermVectorFromFile(trueN);
+            Dictionary<string, int>? FalseVec = GetTermVectorFromFile(falseN);
 
 
             List<bool> testFileTarget = new();
             int i = 1;
             foreach (string cardText in testN)
             {
-                QueryVec = GetTermVector(cardText);
+                Dictionary<string, int>? QueryVec = GetTermVector(cardText);
                 Debug.Write(i + " ->\r\nTrue Negation score: ");
                 var b1 = CosineSimilarity(QueryVec, TrueVec);
                 Debug.WriteLine(b1);

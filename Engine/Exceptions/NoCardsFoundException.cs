@@ -1,5 +1,5 @@
 ﻿
-namespace Masterduel_TLDR_overlay.Exceptions
+namespace TLDROverlay.Exceptions
 {
     class NoCardsFoundException : Exception
     {

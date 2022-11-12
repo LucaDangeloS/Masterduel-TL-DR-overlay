@@ -1,24 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing.Imaging;
+﻿using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Masterduel_TLDR_overlay.WindowHandlers;
-using static Masterduel_TLDR_overlay.WindowHandlers.WindowHandlerInterface;
-using System.Web;
+using static TLDROverlay.WindowHandler.IWindowHandler;
 
-namespace Masterduel_TLDR_overlay.Windows;
 
-internal class Handler : WindowHandlerInterface
+namespace TLDROverlay.WindowHandler.Windows;
+
+public class Handler : IWindowHandler
 {
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     static private extern bool GetWindowRect(IntPtr hWnd, ref Boundaries lpRect);
-        
+
     [DllImport("user32.dll")]
     static extern short GetAsyncKeyState(int VirtualKeyPressed);
 
@@ -63,7 +56,7 @@ internal class Handler : WindowHandlerInterface
 
     //    return (new Point(b.Left, b.Top), new Point(b.Right, b.Bottom));
     //}
-        
+
     // Private methods
     private IntPtr GetWinHandle(string windowName)
     {

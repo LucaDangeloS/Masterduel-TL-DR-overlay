@@ -1,20 +1,20 @@
-using Masterduel_TLDR_overlay.Masterduel;
-using Masterduel_TLDR_overlay.Api;
-using Masterduel_TLDR_overlay.Ocr;
+using TLDROverlay.Masterduel;
+using TLDROverlay.Api;
+using TLDROverlay.Ocr;
 using System.Diagnostics;
-using Masterduel_TLDR_overlay.WindowHandlers;
-using static Masterduel_TLDR_overlay.WindowHandlers.WindowHandlerInterface;
-using Masterduel_TLDR_overlay.Caching;
-using Masterduel_TLDR_overlay.Windows;
-using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
-using static Masterduel_TLDR_overlay.PropertiesLoader;
-using Masterduel_TLDR_overlay.Exceptions;
+using TLDROverlay.Caching;
+using static TLDROverlay.Screen.ImageProcessing;
+using static TLDROverlay.PropertiesLoader;
+using TLDROverlay.WindowHandler;
+using TLDROverlay.Exceptions;
+using static TLDROverlay.WindowHandler.IWindowHandler;
+using TLDROverlay.WindowHandler.Windows;
 
-namespace Masterduel_TLDR_overlay;
+namespace TLDROverlay;
 
 public partial class MainForm : System.Windows.Forms.Form
 {
-    private volatile PropertiesC Properties = PropertiesLoader.Instance.Properties;
+    private readonly PropertiesC Properties = PropertiesLoader.Instance.Properties;
     private readonly Logger _logger = Logger.GetLogger();
     private CardInfo? lastCardSeen = null;
     private readonly OCR ocr = new();
@@ -33,7 +33,7 @@ public partial class MainForm : System.Windows.Forms.Form
         startButton.Enabled = false;
         stopButton.Enabled = true;
 
-        WindowHandlerInterface handler;
+        IWindowHandler handler;
         //bool mouseClicked;
         //var form = new OverlayForm();
         //form.SetWindowStyle();
@@ -73,7 +73,7 @@ public partial class MainForm : System.Windows.Forms.Form
         }).Start();
     }
 
-    private async Task DoThings(WindowHandlerInterface handler, MemCache cachedSplashes, LocalDB db)
+    private async Task DoThings(IWindowHandler handler, MemCache cachedSplashes, LocalDB db)
     {
         (Point, Point) windowArea;
         try
@@ -264,13 +264,10 @@ public partial class MainForm : System.Windows.Forms.Form
             area = MasterduelWindow.Window.GetCardDescCoords(baseCoords);
             bm = TakeScreenshotFromArea(area);
             card = await CheckCardDescription(bm);
-            if (card == null)
-            {
-                card = new()
+            card ??= new()
                 {
                     CardNameIsChanged = true
                 };
-            }
             Debug.Write("This card has it's name changed! Therefore ethe analysis may not work.");
             return card;
         }
@@ -411,7 +408,7 @@ public partial class MainForm : System.Windows.Forms.Form
         }
     }
 
-    private void consoleLog_TextChanged(object sender, EventArgs e)
+    private void ConsoleLog_TextChanged(object sender, EventArgs e)
     {
         consoleLog.Location = new(12, 106);
     }

@@ -1,8 +1,8 @@
 ﻿using System.Net.Http.Json;
-using Masterduel_TLDR_overlay.Masterduel;
-using Masterduel_TLDR_overlay.Exceptions;
+using TLDROverlay.Masterduel;
+using TLDROverlay.Exceptions;
 
-namespace Masterduel_TLDR_overlay.Api;
+namespace TLDROverlay.Api;
 
 /// <summary>
 ///    This is a static class.

@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 
-namespace Masterduel_TLDR_overlay.Masterduel;
+namespace TLDROverlay.WindowHandler;
 
 /// <summary>
 ///    This is a static class.
 /// </summary>
-internal static class MasterduelWindow
+public static class MasterduelWindow
 {
     public static readonly string WINDOW_NAME = "masterduel";
     private static readonly float ASPECT_RATIO = 0.5625f;

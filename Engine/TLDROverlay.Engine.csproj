@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
-    <RootNamespace>Masterduel_TLDR_overlay</RootNamespace>
+    <RootNamespace>TLDROverlay</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -14,6 +14,10 @@
     <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
     <PackageReference Include="System.Runtime.Caching" Version="7.0.0" />
     <PackageReference Include="TesseractOCR" Version="5.2.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WindowHandler\TLDROverlay.WindowHandler.csproj" />
   </ItemGroup>
 
 </Project>

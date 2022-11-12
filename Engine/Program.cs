@@ -1,7 +1,7 @@
-using Masterduel_TLDR_overlay.Caching;
+using TLDROverlay.Caching;
 using System;
 
-namespace Masterduel_TLDR_overlay;
+namespace TLDROverlay;
 
 internal static class Program
 {
