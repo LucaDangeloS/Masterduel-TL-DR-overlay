@@ -35,7 +35,6 @@ namespace TLDROverlay.Caching
 
             if (cardObject != null)
             {
-                // Fix bug, all splashes added are the same
                 AddSplashToCard(card, cardObject);
                 return;
             }
@@ -54,7 +53,8 @@ namespace TLDROverlay.Caching
         {
             int hashSum = splashHash.HashSum;
             int maxDiff = prop.Properties.MAX_PIXELS_DIFF;
-            var queryRes = Connection.Query<SplashDB>("SELECT s.*, abs(SplashHashSum - ?) as sumdiff " +
+            var queryRes = Connection.Query<SplashDB>(
+                "SELECT s.*, abs(SplashHashSum - ?) as sumdiff " +
                 "FROM splashes s " +
                 "WHERE sumdiff <= ? " +
                 "ORDER BY sumdiff ASC",
@@ -65,7 +65,8 @@ namespace TLDROverlay.Caching
         
         public CardInfo? GetCardByName(string name)
         {
-            var queryRes = Connection.Query<CardInfoDB>("SELECT c.* " +
+            var queryRes = Connection.Query<CardInfoDB>(
+                "SELECT c.* " +
                 "FROM cards c " +
                 "WHERE c.Name = ? ",
                 name);
@@ -77,7 +78,14 @@ namespace TLDROverlay.Caching
 
             return CardDAOConverter.ConvertToCardInfo(bestMatch);
         }
-        
+
+        public void ClearDataBase()
+        {
+            Connection.DropTable<CardInfoDB>();
+            Connection.DropTable<SplashDB>();
+            CreateTables();
+        }
+
         /// <summary>
         /// Retrieves the cards with the best match on their splash.
         /// </summary>
@@ -85,12 +93,12 @@ namespace TLDROverlay.Caching
         /// <param name="precison">Number from 0 to 1 indicating the precision.</param>
         /// <returns>Returns the cards that match the hash by the precision specified, 
         /// ordered in descending order of similarity.</returns>
-        public List<CardInfo> GetCards(ImageHash splashHash, float precision)
-        {
-            List<CardInfo> matchedCards = new();
-            //Implement
-            return matchedCards;
-        }
+        //public List<CardInfo> GetCards(ImageHash splashHash, float precision)
+        //{
+        //    List<CardInfo> matchedCards = new();
+        //    //Implement
+        //    return matchedCards;
+        //}
 
         // Private methods
         private void AddSplashToCard(CardInfo card, CardInfoDB cardObject)

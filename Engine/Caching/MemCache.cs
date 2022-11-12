@@ -8,34 +8,21 @@ namespace TLDROverlay.Caching
     {
         private static readonly CacheItemPolicy shortTermCachePolicy = new();
         private static readonly CacheItemPolicy longTermCachePolicy = new();
-        private readonly MemoryCache NonCardsCache = new("NotCardsCacheBins");
-        private readonly MemoryCache CardsCache = new("CardCacheBins");
-        public CardInfo? LastLookup;
         private readonly int MaxPixelDiff;
         private readonly int Bins;
+        private MemoryCache NonCardsCache;
+        private MemoryCache CardsCache;
         private int MaxCacheSize = PropertiesLoader.Instance.Properties.MAX_CACHE_SIZE;
+        public CardInfo? LastLookup;
 
         public MemCache(int maxPixelDiff, int splashSize)
         {
-            //shortTermCachePolicy.SlidingExpiration = TimeSpan.FromMinutes(5);
-            //shortTermCachePolicy.UpdateCallback = UpdateNonCardsCache;
-            //longTermCachePolicy.SlidingExpiration = TimeSpan.FromMinutes(20);
-            //longTermCachePolicy.UpdateCallback = UpdateCardsCache;
-            Bins = (int) Math.Floor(Math.Pow(splashSize, 2) / maxPixelDiff);
+            Bins = (int)Math.Floor(Math.Pow(splashSize, 2) / maxPixelDiff);
             MaxPixelDiff = maxPixelDiff;
-            
-            for (int i = 0; i <= Bins; i++)
-            {
-                CardsCache.Add(new CacheItem((i).ToString(), new LinkedList<Dictionary<ImageHash, CardInfo>>()), longTermCachePolicy);
-            }
 
-            for (int i = 0; i <= Bins; i++)
-            {
-                NonCardsCache.Add(new CacheItem((i).ToString(), new LinkedList<ImageHash>()), shortTermCachePolicy);
-            }
-
+            InitializeCache();
         }
-        
+
         public void AddToCache(ImageHash hash, CardInfo? card)
         {
             var bin = hash.HashSum / MaxPixelDiff;
@@ -95,8 +82,35 @@ namespace TLDROverlay.Caching
             return false;
         }
         
+        public void ClearCache()
+        {
+            NonCardsCache.Dispose();
+            CardsCache.Dispose();
+            InitializeCache();
+        }
 
         // Private methods
+        private void InitializeCache()
+        {
+            // TODO: Have sliding expiration policies in cache
+            //shortTermCachePolicy.SlidingExpiration = TimeSpan.FromMinutes(1);
+            //shortTermCachePolicy.UpdateCallback = UpdateNonCardsCache;
+            //longTermCachePolicy.SlidingExpiration = TimeSpan.FromMinutes(20);
+            //longTermCachePolicy.UpdateCallback = UpdateCardsCache;
+            NonCardsCache = new("NotCardsCacheBins");
+            CardsCache = new("CardCacheBins");
+
+            for (int i = 0; i <= Bins; i++)
+            {
+                CardsCache.Add(new CacheItem(i.ToString(), new LinkedList<Dictionary<ImageHash, CardInfo>>()), longTermCachePolicy);
+            }
+
+            for (int i = 0; i <= Bins; i++)
+            {
+                NonCardsCache.Add(new CacheItem(i.ToString(), new LinkedList<ImageHash>()), shortTermCachePolicy);
+            }
+        }
+        
         private void RenovateNonCardsCache(CacheEntryRemovedArguments args)
         {
             NonCardsCache.Add(new CacheItem(args.CacheItem.Key, new LinkedList<ImageHash>())

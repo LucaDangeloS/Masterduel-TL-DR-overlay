@@ -145,6 +145,7 @@ public static class MasterduelWindow
             RelPos pos = new CardTypeRelPos();
             return GetPosCoords(wp, pos);
         }
+        
         // private methods
         private static (Point, Point) GetPosCoords((Point, Point) wp, RelPos pos)
         {
