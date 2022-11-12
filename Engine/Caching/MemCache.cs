@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Masterduel_TLDR_overlay.Masterduel;
+﻿using Masterduel_TLDR_overlay.Masterduel;
 using System.Runtime.Caching;
 using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
 

@@ -1,11 +1,5 @@
 ﻿using SQLite;
 using SQLiteNetExtensions.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Masterduel_TLDR_overlay.Screen.ImageProcessing;
 
 namespace Masterduel_TLDR_overlay.Masterduel;

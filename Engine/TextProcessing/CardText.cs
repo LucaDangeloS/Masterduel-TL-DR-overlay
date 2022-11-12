@@ -1,11 +1,8 @@
 ﻿using Masterduel_TLDR_overlay.Masterduel;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using TesseractOCR;
 using static Masterduel_TLDR_overlay.Masterduel.CardInfo;
 
 namespace Masterduel_TLDR_overlay.TextProcessing;
@@ -83,7 +80,7 @@ internal static class CardText
         }
         if (str.Length > floor_agr_int + agr_int)
         {
-            return str.Substring(floor_agr_int, len - agr_int - floor_agr_int);
+            return str[floor_agr_int..(len - agr_int)];
         }
         else
         {

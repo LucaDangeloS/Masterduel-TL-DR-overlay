@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TLDR Overlay_Engine", "Engine\TLDR Overlay_Engine.csproj", "{65E42EEF-16D2-43A1-950F-DFE13618A474}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TLDROverlay.Engine", "Engine\TLDROverlay.Engine.csproj", "{65E42EEF-16D2-43A1-950F-DFE13618A474}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TLDR Overlay_MainInterface", "MainInterface\TLDR Overlay_MainInterface.csproj", "{587A3511-D81B-49E8-8694-A14D6132D32C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TLDROverlay.MainInterface", "MainInterface\TLDROverlay.MainInterface.csproj", "{587A3511-D81B-49E8-8694-A14D6132D32C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

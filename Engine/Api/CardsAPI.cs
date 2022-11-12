@@ -1,18 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using Masterduel_TLDR_overlay.Masterduel;
-using System.Runtime.CompilerServices;
-using System.Security.Policy;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using static Masterduel_TLDR_overlay.Api.JsonCardResponse;
 using Masterduel_TLDR_overlay.Exceptions;
 
 namespace Masterduel_TLDR_overlay.Api;
