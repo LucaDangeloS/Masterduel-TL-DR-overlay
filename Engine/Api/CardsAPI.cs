@@ -23,7 +23,7 @@ internal static class CardsAPI
     /// <returns>Returns a <see cref="Task"/> object with a <see cref="CardInfo"/> <see cref="List"/> for the cards found by the search.</returns>
     public static async Task<List<CardInfo>> GetCardByNameAsync(string cardName)
     {
-        string fuzzyPath = BASE_URL + "/?sort=name&fname=" + querifyURI(cardName);
+        string fuzzyPath = BASE_URL + "/?sort=name&fname=" + QuerifyURI(cardName);
         HttpResponseMessage response = await client.GetAsync(fuzzyPath);
         response.EnsureSuccessStatusCode();
         JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
@@ -41,7 +41,7 @@ internal static class CardsAPI
 
     public static async Task<List<CardInfo>> GetCardByExactNameAsync(string cardName)
     {
-        string exactPath = BASE_URL + "/?sort=name&name=" + querifyURI(cardName);
+        string exactPath = BASE_URL + "/?sort=name&name=" + QuerifyURI(cardName);
         HttpResponseMessage response = await client.GetAsync(exactPath);
         response.EnsureSuccessStatusCode();
         JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
@@ -61,7 +61,7 @@ internal static class CardsAPI
     
     public static async Task<List<CardInfo>> GetCardDescAsync(string cardDesc)
     {
-        string exactPath = BASE_URL + "/?sort=name&desc=" + querifyURI(cardDesc);
+        string exactPath = BASE_URL + "/?sort=name&desc=" + QuerifyURI(cardDesc);
         HttpResponseMessage response = await client.GetAsync(exactPath);
         response.EnsureSuccessStatusCode();
         JsonCardResponse? res = await response.Content.ReadFromJsonAsync<JsonCardResponse>();
@@ -105,7 +105,7 @@ internal static class CardsAPI
 
     //}
     
-    private static string querifyURI(string uri)
+    private static string QuerifyURI(string uri)
     {
         string queryString = uri;
         queryString = queryString.Replace("&", "%26");

@@ -57,25 +57,25 @@ internal static class CardText
                 return str;
 
             case Trim_aggressiveness.Moderate:
-                Regex re = new Regex("[a-zA-Z0-9, ]*([\\-= ]*)", RegexOptions.Multiline);
-                Match m = re.Match(str);
-                Group filteredStr = m.Groups[0];
+                //Regex re = new Regex("[a-zA-Z0-9, ]*([\\-= ]*)", RegexOptions.Multiline);
+                //Match m = re.Match(str);
+                //Group filteredStr = m.Groups[0];
 
-                if (filteredStr.Success)
-                {
-                    return filteredStr.Value.Trim();
-                }
+                //if (filteredStr.Success)
+                //{
+                //    return filteredStr.Value.Trim();
+                //}
                 break;
                     
             case Trim_aggressiveness.Aggresive:
-                re = new Regex("[a-zA-Z0-9, ]*([\\-=# ]*)", RegexOptions.Multiline);
-                m = re.Match(str);
-                filteredStr = m.Groups[0];
-                if (filteredStr.Success)
-                {
-                    str = filteredStr.Value.Trim();
-                    len = str.Length;
-                }
+                //re = new Regex("[a-zA-Z0-9, ]*([\\-=# ]*)", RegexOptions.Multiline);
+                //m = re.Match(str);
+                //filteredStr = m.Groups[0];
+                //if (filteredStr.Success)
+                //{
+                //    str = filteredStr.Value.Trim();
+                //    len = str.Length;
+                //}
                 break;
         }
         if (str.Length > floor_agr_int + agr_int)

@@ -68,7 +68,7 @@ public partial class MainForm : System.Windows.Forms.Form
                     await DoThings(handler, cachedSplashes, db);
                     //}
                 }
-                Thread.Sleep(500);
+                Thread.Sleep(300);
             }
         }).Start();
     }
@@ -219,7 +219,7 @@ public partial class MainForm : System.Windows.Forms.Form
             }
         }
 
-        if (card != null)
+        if (_dbCaching && card != null)
         {
             // DEBUG
             Debug.WriteLine("Caching card into local DB: " + card.Name);
@@ -304,7 +304,7 @@ public partial class MainForm : System.Windows.Forms.Form
 
         var reformattedCardName = TextProcessing.CardText.TrimCardName(result.Text, aggressiveness);
         // DEBUG
-        Debug.WriteLine("Querying API with card name: " + reformattedCardName);
+        Debug.WriteLine($"Querying API with card name: '{reformattedCardName}' with {aggressiveness}");
         if (reformattedCardName == "") return null;
 
         // Fetch the API
