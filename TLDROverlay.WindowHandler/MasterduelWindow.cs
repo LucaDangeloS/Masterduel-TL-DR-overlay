@@ -17,56 +17,49 @@ public static class MasterduelWindow
     // 16 * 39 offset for borders
     public static class Window
     {
-        public interface RelPos
-        {
-            public float X_REL_INIT_POS { get; }
-            public float Y_REL_INIT_POS { get; }
-            public float X_REL_END_POS { get; }
-            public float Y_REL_END_POS { get; }
-        };
-        protected class TextRelPos : RelPos
+        protected class TextRelPos : RelativePosition
         {
             public float X_REL_INIT_POS => 0.0191f;
             public float Y_REL_INIT_POS => 0.14f;
             public float X_REL_END_POS => 0.19f;
             public float Y_REL_END_POS => 0.18f;
         };
-        protected class CardTypeRelPos : RelPos
+        protected class CardTypeRelPos : RelativePosition
         {
             public float X_REL_INIT_POS => 0.0175f;
             public float Y_REL_INIT_POS => 0.4288f;
             public float X_REL_END_POS => 0.2156f;
             public float Y_REL_END_POS => 0.460f;
         };
-        protected class DescRelPos : RelPos
+        protected class DescRelPos : RelativePosition
         {
             public float X_REL_INIT_POS => 0.01625f;
             public float Y_REL_INIT_POS => 0.4655f;
             public float X_REL_END_POS => 0.20f;
             public float Y_REL_END_POS => 0.58f;
         }
-        protected class DeckEditorTextRelPos : RelPos
+        protected class DeckEditorTextRelPos : RelativePosition
         {
             public float X_REL_INIT_POS => 0.03f;
             public float Y_REL_INIT_POS => 0.11f;
             public float X_REL_END_POS => 0.211f;
             public float Y_REL_END_POS => 0.160f;
         };
-        protected class SplashRelPos : RelPos
+        protected class SplashRelPos : RelativePosition
         {
             public float X_REL_INIT_POS => 0.030f;
             public float Y_REL_INIT_POS => 0.245f;
             public float X_REL_END_POS => 0.0922f;
             public float Y_REL_END_POS => 0.3546f;
         };
-        protected class EnemyLPRelPos : RelPos
+        protected class EnemyLPRelPos : RelativePosition
         {
             public float X_REL_INIT_POS => 0.7993f;
             public float Y_REL_INIT_POS => 0.0733f;
             public float X_REL_END_POS => 0.8262f;
             public float Y_REL_END_POS => 0.1033f;
         };
-        protected class YourLPRelPos : RelPos
+        protected class YourLPRelPos : RelativePosition
         {
             public float X_REL_INIT_POS => 0.0818f;
             public float Y_REL_INIT_POS => 0.9422f;
@@ -106,13 +99,13 @@ public static class MasterduelWindow
         /// of the currently selected card text is located.</returns>
         public static (Point, Point) GetCardTitleCoords((Point, Point) wp)
         {
-            RelPos pos = new TextRelPos();
+            RelativePosition pos = new TextRelPos();
             return GetPosCoords(wp, pos);
         }
 
         public static (Point, Point) GetCardDescCoords((Point, Point) wp)
         {
-            RelPos pos = new DescRelPos();
+            RelativePosition pos = new DescRelPos();
             return GetPosCoords(wp, pos);
         }
 
@@ -127,27 +120,27 @@ public static class MasterduelWindow
         /// where the name of the currently selected card image is located.</returns>
         public static (Point, Point) GetCardSplashCoords((Point, Point) wp)
         {
-            RelPos pos = new SplashRelPos();
+            RelativePosition pos = new SplashRelPos();
             return GetPosCoords(wp, pos);
         }
         public static (Point, Point) GetYourLP((Point, Point) wp)
         {
-            RelPos pos = new YourLPRelPos();
+            RelativePosition pos = new YourLPRelPos();
             return GetPosCoords(wp, pos);
         }
         public static (Point, Point) GetEnemyLP((Point, Point) wp)
         {
-            RelPos pos = new EnemyLPRelPos();
+            RelativePosition pos = new EnemyLPRelPos();
             return GetPosCoords(wp, pos);
         }
         public static (Point, Point) GetCardTypeCoords((Point, Point) wp)
         {
-            RelPos pos = new CardTypeRelPos();
+            RelativePosition pos = new CardTypeRelPos();
             return GetPosCoords(wp, pos);
         }
         
         // private methods
-        private static (Point, Point) GetPosCoords((Point, Point) wp, RelPos pos)
+        private static (Point, Point) GetPosCoords((Point, Point) wp, RelativePosition pos)
         {
             Size size = new(Math.Abs(wp.Item2.X - wp.Item1.X), Math.Abs(wp.Item2.Y - wp.Item1.Y));
 
