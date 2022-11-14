@@ -156,7 +156,7 @@ namespace TLDROverlay.Caching
             foreach (SplashDB c in splashArts)
             {
                 float tmpPrec = splashHash.CompareTo(CardDAOConverter.ConvertStringToSplashHash(c.SplashHash));
-                if (tmpPrec >= precision && tmpPrec > max)
+                if (tmpPrec >= precision && tmpPrec >= max)
                 {
                     max = tmpPrec;
                     bestMatch = c;
