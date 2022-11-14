@@ -57,7 +57,7 @@ public sealed class ConfigLoader
         if (!ValidateConfiguration())
         {
             config.AppSettings.Settings.Add(key, prevValue.ToString(FloatFormat));
-            throw new ArgumentException($"The property '{key}' can't take the value '{value}'");
+            throw new ArgumentException($"The property '{key}' can't take the value '{value}'.");
         }
     }
 
@@ -69,7 +69,7 @@ public sealed class ConfigLoader
         if (!ValidateConfiguration())
         {
             config.AppSettings.Settings.Add(key, prevValue.ToString());
-            throw new ArgumentException($"The property '{key}' can't take the value '{value}'");
+            throw new ArgumentException($"The property '{key}' can't take the value '{value}'.");
         }
     }
 
