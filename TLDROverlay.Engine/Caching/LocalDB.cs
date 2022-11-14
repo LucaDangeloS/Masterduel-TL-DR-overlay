@@ -5,12 +5,13 @@ using SQLiteNetExtensions.Extensions;
 using System.Diagnostics;
 using static TLDROverlay.Masterduel.CardInfo;
 using static TLDROverlay.Screen.ImageProcessing;
+using TLDROverlay.Config;
 
 namespace TLDROverlay.Caching
 {
     internal class LocalDB
     {
-        private readonly PropertiesLoader prop = PropertiesLoader.Instance;
+        private readonly ConfigLoader _config = ConfigLoader.Instance;
         private readonly string path = "db.sqlite3";
         private readonly string dir = "cache/";
         public readonly (int, int) SplashSize;
@@ -19,7 +20,7 @@ namespace TLDROverlay.Caching
         // Public methods
         public LocalDB()
         {
-            SplashSize = (prop.Properties.SPLASH_SIZE, prop.Properties.SPLASH_SIZE);
+            SplashSize = (_config.GetIntProperty(ConfigMappings.SPLASH_SIZE), _config.GetIntProperty(ConfigMappings.SPLASH_SIZE));
             CreateDbFolder();
             Connection = new SQLiteConnection($"{dir}{path}");
         }
@@ -52,7 +53,7 @@ namespace TLDROverlay.Caching
         public CardInfo? GetCardBySplash(ImageHash splashHash, float precision)
         {
             int hashSum = splashHash.HashSum;
-            int maxDiff = prop.Properties.MAX_PIXELS_DIFF;
+            int maxDiff = _config.GetIntProperty(ConfigMappings.MAX_PIXELS_DIFF);
             var queryRes = Connection.Query<SplashDB>(
                 "SELECT s.*, abs(SplashHashSum - ?) as sumdiff " +
                 "FROM splashes s " +

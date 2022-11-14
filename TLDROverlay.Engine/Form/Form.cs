@@ -4,17 +4,18 @@ using TLDROverlay.Ocr;
 using System.Diagnostics;
 using TLDROverlay.Caching;
 using static TLDROverlay.Screen.ImageProcessing;
-using static TLDROverlay.PropertiesLoader;
+using static TLDROverlay.Config.ConfigLoader;
 using TLDROverlay.WindowHandler;
 using TLDROverlay.Exceptions;
 using static TLDROverlay.WindowHandler.IWindowHandler;
 using TLDROverlay.WindowHandler.Windows;
+using TLDROverlay.Config;
 
 namespace TLDROverlay;
 
 public partial class MainForm : System.Windows.Forms.Form
 {
-    private readonly PropertiesC Properties = PropertiesLoader.Instance.Properties;
+    private readonly ConfigLoader _config = ConfigLoader.Instance;
     private readonly Logger _logger = Logger.GetLogger();
     private CardInfo? lastCardSeen = null;
     private readonly OCR ocr = new();
@@ -49,7 +50,7 @@ public partial class MainForm : System.Windows.Forms.Form
             return;
         }
 
-        MemCache cachedSplashes = new(Properties.MAX_PIXELS_DIFF, Properties.SPLASH_SIZE);
+        MemCache cachedSplashes = new(_config.GetIntProperty(ConfigMappings.MAX_PIXELS_DIFF), _config.GetIntProperty(ConfigMappings.SPLASH_SIZE));
         LocalDB db = new();
         db.Initialize();
 
@@ -85,7 +86,7 @@ public partial class MainForm : System.Windows.Forms.Form
             return;
         }
         CardInfo? cardName = await CheckCardInScreen(windowArea, cachedSplashes, db,
-            Properties.COMPARISON_PRECISION);
+            _config.GetFloatProperty(ConfigMappings.COMPARISON_PRECISION));
         if (cardName != null && !cardName.Equals(lastCardSeen))
         {
             Invoke(new Action(() => {
@@ -239,7 +240,7 @@ public partial class MainForm : System.Windows.Forms.Form
     private async Task<CardInfo?> FecthAPI((Point, Point) baseCoords, ImageHash hash)
     {
         (Point, Point) area;
-        Bitmap bm = new Bitmap(Properties.SPLASH_SIZE, Properties.SPLASH_SIZE);
+        Bitmap bm = new Bitmap(_config.GetIntProperty(ConfigMappings.SPLASH_SIZE), _config.GetIntProperty(ConfigMappings.SPLASH_SIZE));
         CardInfo? card = null;
             
 
@@ -374,7 +375,7 @@ public partial class MainForm : System.Windows.Forms.Form
 
     private bool CheckCardAmount(List<CardInfo> apiRes, int maxAmount = 0)
     {
-        if (maxAmount <= 0) maxAmount = Properties.MAX_POSSIBLE_CARDS_FROM_API;
+        if (maxAmount <= 0) maxAmount = _config.GetIntProperty(ConfigMappings.MAX_POSSIBLE_CARDS_FROM_API);
             
         if (apiRes.Count > maxAmount) return false;
         return true;

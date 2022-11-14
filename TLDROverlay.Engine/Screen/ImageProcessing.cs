@@ -1,6 +1,7 @@
-﻿using static TLDROverlay.PropertiesLoader;
+﻿using static TLDROverlay.Config.ConfigLoader;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using TLDROverlay.Config;
 
 namespace TLDROverlay.Screen;
 
@@ -9,7 +10,7 @@ namespace TLDROverlay.Screen;
 /// </summary>
 public static class ImageProcessing
 {
-    private static readonly PropertiesC Properties = PropertiesLoader.Instance.Properties;
+    private static readonly ConfigLoader _config = ConfigLoader.Instance;
 
     // Public methods
 
@@ -115,7 +116,7 @@ public static class ImageProcessing
 
     public class ImageHash : IComparable<ImageHash>
     {
-        private readonly float _precision = Properties.COMPARISON_PRECISION;
+        private readonly float _precision = _config.GetFloatProperty(ConfigMappings.COMPARISON_PRECISION);
         private List<bool> _hash = new();
         public List<bool> Hash {
             get
@@ -205,7 +206,7 @@ public static class ImageProcessing
     {
         Bitmap contrastedImage = (Bitmap)bm.Clone();
         ContrastWhitePixels(ref contrastedImage, 0.85f);
-        ImageHash imageHash = new ImageHash(contrastedImage, Properties.SPLASH_SIZE);
+        ImageHash imageHash = new ImageHash(contrastedImage, _config.GetIntProperty(ConfigMappings.SPLASH_SIZE));
         contrastedImage.Dispose();
 
         if (imageHash.HashSum > 10)

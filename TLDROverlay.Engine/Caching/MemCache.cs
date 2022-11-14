@@ -1,6 +1,7 @@
 ﻿using TLDROverlay.Masterduel;
 using System.Runtime.Caching;
 using static TLDROverlay.Screen.ImageProcessing;
+using TLDROverlay.Config;
 
 namespace TLDROverlay.Caching
 {
@@ -12,7 +13,7 @@ namespace TLDROverlay.Caching
         private readonly int Bins;
         private MemoryCache NonCardsCache;
         private MemoryCache CardsCache;
-        private int MaxCacheSize = PropertiesLoader.Instance.Properties.MAX_CACHE_SIZE;
+        private int MaxCacheSize = ConfigLoader.Instance.GetIntProperty(ConfigMappings.MAX_CACHE_ENTRIES);
         public CardInfo? LastLookup;
 
         public MemCache(int maxPixelDiff, int splashSize)
