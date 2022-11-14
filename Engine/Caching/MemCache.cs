@@ -30,17 +30,21 @@ namespace TLDROverlay.Caching
 
             if (card == null)
             {
-                var list = (LinkedList<ImageHash>) NonCardsCache.GetCacheItem(bin.ToString()).Value;
+                var list = GetNonCardsCache(bin);
                 list.AddLast(hash);
                 if (list.Count > MaxCacheSize)
+                {
                     list.RemoveFirst();
+                }
             }
             else
             {
-                var list = (LinkedList<Dictionary<ImageHash, CardInfo>>) CardsCache.GetCacheItem(bin.ToString()).Value;
+                var list = GetCardsCache(bin);
                 list.AddLast(new Dictionary<ImageHash, CardInfo>() { { hash, card } });
                 if (list.Count > MaxCacheSize)
+                {
                     list.RemoveFirst();
+                }
             }
         }
 
@@ -48,10 +52,10 @@ namespace TLDROverlay.Caching
         {
             var bin = hash.HashSum / MaxPixelDiff;
             // TODO: Fix cache getting null references
-            var list = (LinkedList<ImageHash>)NonCardsCache.AddOrGetExisting(bin.ToString(), new LinkedList<ImageHash>(), shortTermCachePolicy);
+            var NonCardsList = GetNonCardsCache(bin);
 
             ImageHash? res = null;
-            foreach (var item in list)
+            foreach (var item in NonCardsList)
             {
                 if (item.Equals(hash))
                 {
@@ -65,10 +69,10 @@ namespace TLDROverlay.Caching
                 LastLookup = null;
                 return true;
             }
-            
-            var list2 = (LinkedList<Dictionary<ImageHash, CardInfo>>) CardsCache.GetCacheItem(bin.ToString()).Value;
 
-            foreach (var dict in list2)
+            var CardsList = GetCardsCache(bin);
+
+            foreach (var dict in CardsList)
             {
                 foreach (var item in dict)
                 {
@@ -132,6 +136,16 @@ namespace TLDROverlay.Caching
             var list = (LinkedList<Dictionary<ImageHash, CardInfo>>) CardsCache.GetCacheItem(args.Key).Value;
             if (list.Count > MaxCacheSize)
                 list.RemoveFirst();
+        }
+
+        private LinkedList<ImageHash> GetNonCardsCache(int bin)
+        {
+            return (LinkedList<ImageHash>)NonCardsCache.AddOrGetExisting(bin.ToString(), new LinkedList<ImageHash>(), shortTermCachePolicy);
+        }
+
+        private LinkedList<Dictionary<ImageHash, CardInfo>> GetCardsCache(int bin)
+        {
+            return (LinkedList<Dictionary<ImageHash, CardInfo>>)CardsCache.GetCacheItem(bin.ToString()).Value;
         }
     }
 }
