@@ -240,7 +240,8 @@ public partial class MainForm : System.Windows.Forms.Form
     private async Task<CardInfo?> FecthAPI((Point, Point) baseCoords, ImageHash hash)
     {
         (Point, Point) area;
-        Bitmap bm = new Bitmap(_config.GetIntProperty(ConfigMappings.SPLASH_SIZE), _config.GetIntProperty(ConfigMappings.SPLASH_SIZE));
+        int splashSize = _config.GetIntProperty(ConfigMappings.SPLASH_SIZE);
+        Bitmap bm = new Bitmap(splashSize, splashSize);
         CardInfo? card = null;
             
 

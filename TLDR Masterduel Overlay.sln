@@ -13,6 +13,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TLDROverlay.WindowHandler", "TLDROverlay.WindowHandler\TLDROverlay.WindowHandler.csproj", "{5CB4ED5E-9D71-4032-AA86-230AD49497A6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TLDROverlay.Overlay", "TLDROverlay.Overlay\TLDROverlay.Overlay.csproj", "{22213B7F-3F2B-4E24-A729-27492EC8721F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5CB4ED5E-9D71-4032-AA86-230AD49497A6} = {5CB4ED5E-9D71-4032-AA86-230AD49497A6}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2757BB06-D0D5-4956-AA1B-DFA804930796}"
 	ProjectSection(SolutionItems) = preProject
