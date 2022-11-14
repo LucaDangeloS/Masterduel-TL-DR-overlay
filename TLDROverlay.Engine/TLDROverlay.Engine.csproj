@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WindowHandler\TLDROverlay.WindowHandler.csproj" />
+    <ProjectReference Include="..\TLDROverlay.WindowHandler\TLDROverlay.WindowHandler.csproj" />
   </ItemGroup>
 
 </Project>
