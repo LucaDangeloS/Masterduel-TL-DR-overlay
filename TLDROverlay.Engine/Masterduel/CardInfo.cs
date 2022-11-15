@@ -72,12 +72,17 @@ public class CardInfo
 
     public override bool Equals(object? obj)
     {
-        if (obj == null || !this.GetType().Equals(obj.GetType())) return false;
+        if (obj == null || !GetType().Equals(obj.GetType())) return false;
         CardInfo obj2 = (CardInfo)obj;
-        return obj2.Name.Equals(this.Name);
+        return obj2.Name.Equals(Name);
+    }
+
+    public override int GetHashCode()
+    {
+        return Name.GetHashCode();
     }
 }
-
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 [Table("cards")]
 public class CardInfoDB
 {
@@ -123,5 +128,7 @@ public class SplashDB
     [Indexed]
     public int SplashHashSum { get; set; }
     [ManyToOne]
+
     public CardInfoDB Card { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }
