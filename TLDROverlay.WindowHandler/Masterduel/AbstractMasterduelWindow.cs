@@ -10,7 +10,7 @@ public abstract class AbstractMasterduelWindow
     public int WindowHeight { get; private set; }
     private int prevWindowDimensions;
     private (Point, Point) _WindowArea;
-    public (Point, Point) WindowArea
+    public virtual (Point, Point) WindowArea
     {
         get
         {
@@ -26,28 +26,28 @@ public abstract class AbstractMasterduelWindow
             WindowHeight = Math.Abs(_WindowArea.Item2.Y - _WindowArea.Item1.Y);
 
             // Recalculate coordinates
-            CardTitle = GetPosCoords(_WindowArea, new Window.TextRelPos());
-            CardDesc = GetPosCoords(_WindowArea, new Window.DescRelPos());
-            CardSplash = GetPosCoords(_WindowArea, new Window.SplashRelPos());
-            YourLP = GetPosCoords(_WindowArea, new Window.YourLPRelPos());
-            EnemyLP = GetPosCoords(_WindowArea, new Window.EnemyLPRelPos());
-            CardType = GetPosCoords(_WindowArea, new Window.CardTypeRelPos());
+            CardTitleCoordinates = GetPosCoords(_WindowArea, new Window.TextRelPos());
+            CardDescCoordinates = GetPosCoords(_WindowArea, new Window.DescRelPos());
+            CardSplashCoordinates = GetPosCoords(_WindowArea, new Window.SplashRelPos());
+            YourLPCoordinates = GetPosCoords(_WindowArea, new Window.YourLPRelPos());
+            EnemyLPCoordinates = GetPosCoords(_WindowArea, new Window.EnemyLPRelPos());
+            CardTypeCoordinates = GetPosCoords(_WindowArea, new Window.CardTypeRelPos());
         }
     }
 
     // Coords
-    public (Point, Point) CardTitle;
-    public (Point, Point) CardDesc;
-    public (Point, Point) CardSplash;
-    public (Point, Point) YourLP;
-    public (Point, Point) EnemyLP;
-    public (Point, Point) CardType;
+    public (Point, Point) CardTitleCoordinates;
+    public (Point, Point) CardDescCoordinates;
+    public (Point, Point) CardSplashCoordinates;
+    public (Point, Point) YourLPCoordinates;
+    public (Point, Point) EnemyLPCoordinates;
+    public (Point, Point) CardTypeCoordinates;
 
 
     // public methods
-    public bool DidResolutionChange()
+    public virtual bool DidResolutionChange()
     {
-        return prevWindowDimensions == WindowWidth + WindowHeight;
+        return prevWindowDimensions != WindowWidth + WindowHeight;
     }
 
 

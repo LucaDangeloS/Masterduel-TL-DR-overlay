@@ -11,18 +11,18 @@ namespace TLDROverlay.WindowHandler.Masterduel.Windows
     public class MasterduelWindow : AbstractMasterduelWindow
     {
         private static readonly float DEFAULT_ASPECT_RATIO = 0.5625f;
-        private static int WIDTH_BORDER_OFFSET;
-        private static int HEIGHT_BORDER_OFFSET;
-        private static readonly int[] WIDTHS_GDC = { 16, 16, 1366 };
-        private static readonly int[] HEIGHT_GDC = { 9, 10, 768 };
+        private static int WIDTH_BORDER_OFFSET = 0;
+        private static int HEIGHT_BORDER_OFFSET = 0;
+        private static readonly int[] WIDTHS_GDC = { 160, 160, 1366 };
+        private static readonly int[] HEIGHT_GDC = { 90, 100, 768 };
         private static readonly int MAX_WIN_OFFSET = 50;
-        
+        private int prevWindowDimensions;
         // Redefinitions
         public new int WindowWidth { get; private set; }
         public new int WindowHeight { get; private set; }
         
         private (Point, Point) _WindowArea;
-        public new (Point, Point) WindowArea
+        public override (Point, Point) WindowArea
         {
             get
             {
@@ -32,26 +32,27 @@ namespace TLDROverlay.WindowHandler.Masterduel.Windows
             {
                 if (_WindowArea == value) return;
                 _WindowArea = value;
-                Debug.WriteLine("Impl Changing window points");
-                WindowWidth = Math.Abs(_WindowArea.Item2.X - _WindowArea.Item1.X);
-                WindowHeight = Math.Abs(_WindowArea.Item2.Y - _WindowArea.Item1.Y);
 
                 // Recalculate coordinates
-                CardTitle = GetPosCoords(_WindowArea, new Window.TextRelPos());
-                CardDesc = GetPosCoords(_WindowArea, new Window.DescRelPos());
-                CardSplash = GetPosCoords(_WindowArea, new Window.SplashRelPos());
-                YourLP = GetPosCoords(_WindowArea, new Window.YourLPRelPos());
-                EnemyLP = GetPosCoords(_WindowArea, new Window.EnemyLPRelPos());
-                CardType = GetPosCoords(_WindowArea, new Window.CardTypeRelPos());
+                CardTitleCoordinates = GetPosCoords(_WindowArea, new Window.TextRelPos());
+                CardDescCoordinates = GetPosCoords(_WindowArea, new Window.DescRelPos());
+                CardSplashCoordinates = GetPosCoords(_WindowArea, new Window.SplashRelPos());
+                YourLPCoordinates = GetPosCoords(_WindowArea, new Window.YourLPRelPos());
+                EnemyLPCoordinates = GetPosCoords(_WindowArea, new Window.EnemyLPRelPos());
+                CardTypeCoordinates = GetPosCoords(_WindowArea, new Window.CardTypeRelPos());
+                WindowWidth = Math.Abs(_WindowArea.Item2.X - _WindowArea.Item1.X) - WIDTH_BORDER_OFFSET;
+                WindowHeight = Math.Abs(_WindowArea.Item2.Y - _WindowArea.Item1.Y) - HEIGHT_BORDER_OFFSET;
+                prevWindowDimensions = WindowWidth + WindowHeight;
             }
         }
+        // public methods
+        public override bool DidResolutionChange()
+        {
+            return prevWindowDimensions != WindowWidth + WindowHeight;
+        }
+
 
         // private methods
-        private (Point, Point) TrimWindowBorders(Point, Point)
-        {
-            
-        }
-        
         private bool IsWindowed(Size size)
         {
             var aspectRatio = (float)size.Height / size.Width;
@@ -78,7 +79,7 @@ namespace TLDROverlay.WindowHandler.Masterduel.Windows
 
             if (IsWindowed(size))
             {
-                size = new(Math.Abs(wp.Item2.X - wp.Item1.X) - WIDTH_BORDER_OFFSET, Math.Abs(wp.Item2.Y - wp.Item1.Y) - HEIGHT_BORDER_OFFSET);
+                size = new(size.Width - WIDTH_BORDER_OFFSET, size.Height - HEIGHT_BORDER_OFFSET);
                 wp.Item1.X += WIDTH_BORDER_OFFSET / 2;
                 wp.Item1.Y += HEIGHT_BORDER_OFFSET - WIDTH_BORDER_OFFSET / 2;
             };
