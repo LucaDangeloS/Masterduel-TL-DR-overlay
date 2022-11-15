@@ -10,6 +10,8 @@ using TLDROverlay.Exceptions;
 using static TLDROverlay.WindowHandler.IWindowHandler;
 using TLDROverlay.WindowHandler.Windows;
 using TLDROverlay.Config;
+using TLDROverlay.WindowHandler.Masterduel;
+using TLDROverlay.WindowHandler.Masterduel.Windows;
 
 namespace TLDROverlay;
 
@@ -19,6 +21,7 @@ public partial class MainForm : System.Windows.Forms.Form
     private readonly Logger _logger = Logger.GetLogger();
     private CardInfo? lastCardSeen = null;
     private readonly OCR ocr = new();
+    private readonly AbstractMasterduelWindow MasterduelWindow = new MasterduelWindow();
     private readonly bool _dbCaching = true;
     private readonly bool _memCaching = true;
     private readonly bool _skipDuelScreenCheck = false;
@@ -42,7 +45,7 @@ public partial class MainForm : System.Windows.Forms.Form
 
         try
         {
-            handler = new Handler(MasterduelWindow.WINDOW_NAME);
+            handler = new Handler(MasterduelWindow.WindowName);
         }
         catch (NoWindowFoundException)
         {
@@ -80,11 +83,13 @@ public partial class MainForm : System.Windows.Forms.Form
         try
         {
             windowArea = handler.GetWindowPoints();
+            MasterduelWindow.WindowArea = windowArea;
         }
         catch (Exception)
         {
             return;
         }
+
         CardInfo? cardName = await CheckCardInScreen(windowArea, cachedSplashes, db,
             _config.GetFloatProperty(ConfigMappings.COMPARISON_PRECISION));
         if (cardName != null && !cardName.Equals(lastCardSeen))
@@ -98,21 +103,21 @@ public partial class MainForm : System.Windows.Forms.Form
         }
     }
 
-    private bool CheckIfInDuelScreen((Point, Point) baseCoords)
+    private bool CheckIfInDuelScreen()
     {
         ImageAnalysis ocrRes;
 
-        var points = MasterduelWindow.Window.GetEnemyLP(baseCoords);
+        var points = MasterduelWindow.EnemyLPCoordinates;
         var bm = TakeScreenshotFromArea(points.Item1, points.Item2);
         ocrRes = ocr.ReadImage(bm);
 
         // Detect LPs in screen
         bool detectedLP = ocrRes.Text.ToLower().Contains("lp");
-
+        
         bm.Dispose();
 
         if (!detectedLP) { 
-            points = MasterduelWindow.Window.GetYourLP(baseCoords);
+            points = MasterduelWindow.YourLPCoordinates;
             bm = TakeScreenshotFromArea(points.Item1, points.Item2);
             ocrRes = ocr.ReadImage(bm);
             bm.Dispose();
@@ -123,7 +128,7 @@ public partial class MainForm : System.Windows.Forms.Form
     }
     // TODO: Split methods to other classes. "DuelChecks.cs" for instance.
     // Another class named "CardRetrieval.cs" or something like that.
-    private bool CheckIfCardInScreen((Point, Point) baseCoords)
+    private bool CheckIfCardInScreen()
     {
         ImageAnalysis ocrRes;
         string[] validTypes = { "effect", "spell", "trap", "link", "pendulum", "xyz", "synchro", "fusion", "ritual" };
@@ -138,12 +143,10 @@ public partial class MainForm : System.Windows.Forms.Form
             'Pendulum Effect Fusion Monster' or 'Token' and is not case sensitive."
         */
         bool detectedCard = false;
-        var points = MasterduelWindow.Window.GetEnemyLP(baseCoords);
-        var bm = TakeScreenshotFromArea(points.Item1, points.Item2);
 
         // Get if card is in screen
-        points = MasterduelWindow.Window.GetCardTypeCoords(baseCoords);
-        bm = TakeScreenshotFromArea(points.Item1, points.Item2);
+        var points = MasterduelWindow.CardTypeCoordinates;
+        var bm = TakeScreenshotFromArea(points.Item1, points.Item2);
 
         ocrRes = ocr.ReadImage(bm);
 
@@ -159,7 +162,7 @@ public partial class MainForm : System.Windows.Forms.Form
         Bitmap bm;
 
         // Check if in duel screen
-        if (!_skipDuelScreenCheck && !CheckIfInDuelScreen(baseCoords))
+        if (!_skipDuelScreenCheck && !CheckIfInDuelScreen())
         {
             // DEBUG
             Debug.WriteLine("Skipping card analysis");
@@ -167,7 +170,7 @@ public partial class MainForm : System.Windows.Forms.Form
         }
 
         // Get splash area coords
-        area = MasterduelWindow.Window.GetCardSplashCoords(baseCoords);
+        area = MasterduelWindow.CardSplashCoordinates;
 
         // Take screenshot of area
         bm = TakeScreenshotFromArea(area.Item1, area.Item2);
@@ -206,7 +209,7 @@ public partial class MainForm : System.Windows.Forms.Form
         }
 
         // Ultimately, Fecth the API (TODO) 
-        if (_skipCardInScreenCheck || CheckIfCardInScreen(baseCoords))
+        if (_skipCardInScreenCheck || CheckIfCardInScreen())
         {
             card = await FecthAPI(baseCoords, hash);
             if (card == null) return null;
@@ -245,11 +248,11 @@ public partial class MainForm : System.Windows.Forms.Form
         CardInfo? card = null;
             
 
-        area = MasterduelWindow.Window.GetCardTitleCoords(baseCoords);
+        area = MasterduelWindow.CardTitleCoordinates;
         bm = TakeScreenshotFromArea(area);
             
         // Check is the card is still the same
-        area = MasterduelWindow.Window.GetCardSplashCoords(baseCoords);
+        area = MasterduelWindow.CardSplashCoordinates;
         if (!CheckSplashCardTextValidity(area, hash))
         {
             bm.Dispose();
@@ -263,7 +266,7 @@ public partial class MainForm : System.Windows.Forms.Form
         }
         catch (CardNameIsChangedException)
         {
-            area = MasterduelWindow.Window.GetCardDescCoords(baseCoords);
+            area = MasterduelWindow.CardDescCoordinates;
             bm = TakeScreenshotFromArea(area);
             card = await CheckCardDescription(bm);
             card ??= new()
