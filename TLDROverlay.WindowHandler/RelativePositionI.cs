@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TLDROverlay.WindowHandler
 {
-    public interface RelativePosition
+    public interface IRelativePosition
     {
         public float X_REL_INIT_POS { get; }
         public float Y_REL_INIT_POS { get; }
