@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using TLDROverlay.Overlay.Icons;
 
 namespace TLDROverlay.Overlay
@@ -18,7 +19,14 @@ namespace TLDROverlay.Overlay
 
             //ApplicationConfiguration.Initialize();
             var overlay = new OverlayManager(distr, scheme, start);
-            overlay.Initialize();
+            Thread FormThread = new Thread(() =>
+            {
+                overlay.Initialize();
+            });
+            FormThread.Start();
+            Thread.Sleep(2000);
+            Debug.WriteLine("Changing point");
+            overlay.StartingPoint = new Point(600, 600);
         }
     }
 }
