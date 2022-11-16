@@ -8,7 +8,7 @@ namespace TLDROverlay.Overlay.Icons
 {
     public class Icon
     {
-        public Size Resolution { get; }
+        public Size IconSize { get; }
         public Bitmap Image { get; }
         public string Path { get; }
 
@@ -18,7 +18,7 @@ namespace TLDROverlay.Overlay.Icons
             Path = path;
             Image = new Bitmap(tmpBm, resolution);
             tmpBm.Dispose();
-            Resolution = resolution;
+            IconSize = resolution;
         }
     }
 }
