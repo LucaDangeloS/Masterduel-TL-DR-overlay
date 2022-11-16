@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TLDROverlay.Overlay.Icons
 {
+    // TODO: The implementation of the Icon class may not be needed as there is already one at System.Drawing.Icon
     public class Icon
     {
         public Size IconSize { get; }

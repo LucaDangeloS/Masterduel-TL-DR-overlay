@@ -1,4 +1,4 @@
-﻿namespace TLDEOverlay.Overlay
+﻿namespace TLDROverlay.Overlay
 {
     partial class Overlay
     {
@@ -28,10 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.SuspendLayout();
+            // 
+            // Overlay
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Name = "Overlay";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.Overlay_Load);
+            this.ResumeLayout(false);
+
         }
 
         #endregion
