@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography.Pkcs;
 using System.Text;
 using System.Threading.Tasks;
 using TLDROverlay.Overlay.Icons;
@@ -19,6 +21,7 @@ namespace TLDROverlay.Overlay
                 _maxIconCount = _iconDistribution.Item1 * _iconDistribution.Item2;
             }
         }
+        
         private IconScheme _iconScheme;
         public IconScheme IconScheme {
             get { return _iconScheme; }
@@ -28,26 +31,44 @@ namespace TLDROverlay.Overlay
                 _iconScheme = value;
             }
         }
-        public Point StartingPoint { get; set; } 
         
-        private Form _overlayWindow;
+        private Point _startingPoint;
+        public Point StartingPoint
+        {
+            get {return _startingPoint; }
+            set
+            {
+                _startingPoint = value;
+
+                if (_isOverlayRunning)
+                {
+                    UpdateOverlay(_overlayWindow.SetWindowLocation, _startingPoint);
+                }
+            }
+            
+        }
+
+        private bool _isOverlayRunning = false;
+        private Overlay _overlayWindow;
         private readonly List<Icon> _icons;
         private int IconCount = 0;
         private int _maxIconCount;
 
         public OverlayManager((int, int) iconDistribution, IconScheme iconScheme, Point startingPoint)
         {
+            _overlayWindow = new Overlay();
+
             IconDistribution = iconDistribution;
             IconScheme = iconScheme;
             StartingPoint = startingPoint;
 
             _icons = new List<Icon>();
-            _overlayWindow = new Overlay();
         }
 
         // public methods
         public void Initialize()
         {
+            _isOverlayRunning = true;
             _overlayWindow.ShowDialog();
         }
         public void HideOverlay()
@@ -64,7 +85,7 @@ namespace TLDROverlay.Overlay
         {
             if (IconCount + 1 > _maxIconCount)
             {
-                throw new Exception("Icon count exceeds maximum icon count");
+                throw new Exception("Icon limit reached");
             }
             var icon = IconScheme.GetIcon(key);
         }
@@ -77,6 +98,15 @@ namespace TLDROverlay.Overlay
         public void ClearIcons()
         {
             
+        }
+        
+        // private methods
+        private void UpdateOverlay(Delegate func, params object[] parameters)
+        {
+            _overlayWindow.Invoke((MethodInvoker)delegate
+            {
+                func.DynamicInvoke(parameters);
+            });
         }
     }
 }
