@@ -15,13 +15,19 @@ namespace TLDROverlay.Overlay
             InitializeComponent();
         }
 
+        public Overlay(Point startingPoint)
+        {
+            StartPosition = FormStartPosition.Manual;
+            Location = startingPoint;
+            InitializeComponent();
+        }
+
         private void Overlay_Load(object sender, EventArgs e)
         {
             BackColor = Color.Wheat;
             TransparencyKey = Color.Wheat;
-            //FormBorderStyle = FormBorderStyle.None;
+            FormBorderStyle = FormBorderStyle.None;
             TopMost = true;
-            StartPosition = FormStartPosition.Manual;
             ShowInTaskbar = false;
 
             //int initialStyle = GetWindowLong(Handle, -20);
@@ -37,9 +43,9 @@ namespace TLDROverlay.Overlay
         public void SetWindowSize(Size newSize)
         {
             Size = newSize;
-            Show();
         }
 
         // TODO: Draw Icon at position?
+
     }
 }
