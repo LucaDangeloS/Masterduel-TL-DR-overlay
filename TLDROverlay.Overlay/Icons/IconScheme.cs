@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Icon = TLDROverlay.Overlay.Icons.Icon;
 
 namespace TLDROverlay.Overlay.Icons
 {
@@ -55,7 +56,7 @@ namespace TLDROverlay.Overlay.Icons
             foreach (int key in _iconMap.Keys)
             {
                 var i = _iconMap[key];
-                _iconMap[key] = new Icon(i.Path, size);
+                _iconMap[key] = new Icon(i, size);
             }
         }
         
