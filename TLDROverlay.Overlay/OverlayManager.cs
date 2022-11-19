@@ -34,13 +34,17 @@ namespace TLDROverlay.Overlay
         }
         
         private Point _startingPoint;
+
+        /// <summary>
+        /// The starting point of the icon grid. Doesn't affect when the overlay was not currently showed or it's hidden. 
+        /// Call the <see cref="ShowOverlay"/> method first.
+        /// </summary>
         public Point StartingPoint
         {
             get {return _startingPoint; }
             set
             {
                 _startingPoint = value;
-
                 if (_isOverlayRunning)
                 {
                     UpdateOverlay(_overlayWindow.SetWindowLocation, _startingPoint);
@@ -56,6 +60,8 @@ namespace TLDROverlay.Overlay
         private List<PictureBox> ActiveIconsList;
         private Point LastIconLocation = new Point(0, 0);
         private int MaxYIconSize = 0;
+        private Thread FormThread;
+        private Size OverlayWindowSize = new Size(0, 0);
 
         public OverlayManager((int, int) iconDistribution, IconScheme iconScheme, Point startingPoint)
         {
@@ -68,20 +74,37 @@ namespace TLDROverlay.Overlay
         }
 
         // public methods
-        public void Initialize()
+        /// <summary>
+        /// Call this method to initialize the overlay and be able to call methods to alter it.
+        /// </summary>
+        public void ShowOverlay()
         {
+            if (_isOverlayRunning) return;
             _isOverlayRunning = true;
-            _overlayWindow.ShowDialog();
+            FormThread = new Thread(() =>
+            {
+                _overlayWindow.ShowDialog();
+            });
+            FormThread.Start();
+            _overlayWindow.LoadedSignal.Wait(5000);
+            UpdateOverlay(_overlayWindow.SetWindowSize, OverlayWindowSize);
         }
         public void HideOverlay()
         {
-            _overlayWindow.Hide();
+            if (!_isOverlayRunning) return;
+            UpdateOverlay(_overlayWindow.SetWindowSize, new Size(0, 0));
         }
-        
-        public void ShowOverlay()
+
+        public void StopOverlay()
         {
-            _overlayWindow.Show();
+            if (!_isOverlayRunning) return;
+            UpdateOverlay(_overlayWindow.SetWindowSize, new Size(0, 0));
+            ClearIcons();
+            _isOverlayRunning = false;
+            UpdateOverlay(_overlayWindow.Close);
+            FormThread.Join();
         }
+
 
         public void AppendIcon(int key, string tooltip)
         {
@@ -94,7 +117,9 @@ namespace TLDROverlay.Overlay
             PictureBox picBox = CreatePictureBox(icon, iconPos, icon.Size);
             ActiveIconsList.Add(picBox);
             IconCount++;
-            UpdateOverlay(_overlayWindow.Controls.Add, picBox);
+            // TODO: Change form size according to the IconCount
+            UpdateOverlay(_overlayWindow.AddIconWithTooltip, picBox, tooltip);
+            UpdateOverlay(_overlayWindow.SetWindowSize, OverlayWindowSize);
         }
 
         public void ClearIcons()
@@ -107,21 +132,17 @@ namespace TLDROverlay.Overlay
             IconCount = 0;
             LastIconLocation = new Point(0, 0);
             MaxYIconSize = 0;
+            OverlayWindowSize = new Size(0, 0);
         }
         
+
         // private methods
         private void UpdateOverlay(Delegate func, params object[] parameters)
         {
-            try
+            _overlayWindow.Invoke((MethodInvoker)delegate
             {
-                _overlayWindow.Invoke((MethodInvoker)delegate
-                {
-                    func.DynamicInvoke(parameters);
-                });
-            } catch (Exception e)
-            {
-                Debug.WriteLine(e.Message);
-            }
+                func.DynamicInvoke(parameters);
+            });
         }
 
         private PictureBox CreatePictureBox(Icon icon, Point location, Size size)
@@ -140,11 +161,16 @@ namespace TLDROverlay.Overlay
         {
             Point iconPos = LastIconLocation;
             var mod = IconCount % IconDistribution.Y;
-
+            
             if (mod == 0)
             {
                 iconPos.X = 0;
                 iconPos.Y += MaxYIconSize;
+                OverlayWindowSize.Height += size.Height;
+            } 
+            else
+            {
+                OverlayWindowSize.Width += size.Width;
             }
 
             LastIconLocation = new Point(iconPos.X + size.Width, iconPos.Y);
