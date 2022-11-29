@@ -10,7 +10,7 @@ namespace TLDROverlay.TextProcessing;
 /// <summary>
 ///    This is a static class.
 /// </summary>
-internal static class CardText
+public static class CardText
 {
     private static readonly string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
     private static readonly string[] trueN = TextUtils.FileParser(dir + "/TrueNegations_stripped.txt");

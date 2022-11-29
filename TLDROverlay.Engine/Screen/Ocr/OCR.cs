@@ -6,13 +6,13 @@ namespace TLDROverlay.Ocr;
 
 internal class OCR
 {
-    private Engine _engine_5;
+    private TesseractOCR.Engine _engine_5;
     private readonly bool _isDebug = true;
 
     // Public methods
     public OCR()
     {
-        _engine_5 = new Engine(@"./tessdata", "MasterduelEng", TesseractOCR.Enums.EngineMode.Default);
+        _engine_5 = new TesseractOCR.Engine(@"./tessdata", "MasterduelEng", TesseractOCR.Enums.EngineMode.Default);
         _engine_5.DefaultPageSegMode = TesseractOCR.Enums.PageSegMode.SingleLine;
     }
 
