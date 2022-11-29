@@ -12,7 +12,7 @@ namespace TLDROverlay.TextProcessing;
 /// </summary>
 public static class CardText
 {
-    private static readonly string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+    private static readonly string dir = System.AppDomain.CurrentDomain.BaseDirectory;
     private static readonly string[] trueN = TextUtils.FileParser(dir + "/TrueNegations_stripped.txt");
     private static readonly string[] falseN = TextUtils.FileParser(dir + "/FalseNegations_stripped.txt");
 
