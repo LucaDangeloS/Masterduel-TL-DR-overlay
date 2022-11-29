@@ -17,6 +17,7 @@ namespace TLDROverlay.WindowHandler.Masterduel.Windows
         private static readonly int[] HEIGHT_GDC = { 90, 100, 768 };
         private static readonly int MAX_WIN_OFFSET = 50;
         private int prevWindowDimensions;
+        
         // Redefinitions
         public new int WindowWidth { get; private set; }
         public new int WindowHeight { get; private set; }
@@ -45,12 +46,30 @@ namespace TLDROverlay.WindowHandler.Masterduel.Windows
                 prevWindowDimensions = WindowWidth + WindowHeight;
             }
         }
+        
         // public methods
         public override bool DidResolutionChange()
         {
             return prevWindowDimensions != WindowWidth + WindowHeight;
         }
 
+        public override (Point, Point) GetPosCoords((Point, Point) wp, IRelativePosition pos)
+        {
+            Size size = new(Math.Abs(wp.Item2.X - wp.Item1.X), Math.Abs(wp.Item2.Y - wp.Item1.Y));
+
+            if (IsWindowed(size))
+            {
+                size = new(size.Width - WIDTH_BORDER_OFFSET, size.Height - HEIGHT_BORDER_OFFSET);
+                wp.Item1.X += WIDTH_BORDER_OFFSET / 2;
+                wp.Item1.Y += HEIGHT_BORDER_OFFSET - WIDTH_BORDER_OFFSET / 2;
+            };
+
+            var newPoints = (new Point((int)(pos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
+                                        (int)(pos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
+                                new Point((int)(pos.X_REL_END_POS * size.Width) + wp.Item1.X,
+                                        (int)(pos.Y_REL_END_POS * size.Height) + wp.Item1.Y));
+            return newPoints;
+        }
 
         // private methods
         private bool IsWindowed(Size size)
@@ -71,24 +90,6 @@ namespace TLDROverlay.WindowHandler.Masterduel.Windows
                 }
             }
             return ratioed;
-        }
-        
-        public override (Point, Point) GetPosCoords((Point, Point) wp, IRelativePosition pos)
-        {
-            Size size = new(Math.Abs(wp.Item2.X - wp.Item1.X), Math.Abs(wp.Item2.Y - wp.Item1.Y));
-
-            if (IsWindowed(size))
-            {
-                size = new(size.Width - WIDTH_BORDER_OFFSET, size.Height - HEIGHT_BORDER_OFFSET);
-                wp.Item1.X += WIDTH_BORDER_OFFSET / 2;
-                wp.Item1.Y += HEIGHT_BORDER_OFFSET - WIDTH_BORDER_OFFSET / 2;
-            };
-
-            var newPoints = (new Point((int)(pos.X_REL_INIT_POS * size.Width) + wp.Item1.X,
-                                        (int)(pos.Y_REL_INIT_POS * size.Height) + wp.Item1.Y),
-                                new Point((int)(pos.X_REL_END_POS * size.Width) + wp.Item1.X,
-                                        (int)(pos.Y_REL_END_POS * size.Height) + wp.Item1.Y));
-            return newPoints;
         }
     }
 
