@@ -1,10 +1,11 @@
 # Masterduel TLDR overlay
 
 # TODOs
-- [ ] Take card type into account for internals (branch)
-- [ ] UI module
+- [X] UI module
 - [ ] Integrate interface
 - [ ] Add features to interface (change properties)
-- [ ] Add logic when making big changes to properties
+
+# Possible improvements
+- [ ] Take card type into account for internals (branch)
 - [ ] Localization and language support
 - [ ] Try reading memory process (later)

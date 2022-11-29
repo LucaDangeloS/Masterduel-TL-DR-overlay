@@ -62,6 +62,7 @@ namespace TLDROverlay.Overlay
         private int MaxYIconSize = 0;
         private Thread FormThread;
         private Size OverlayWindowSize = new Size(0, 0);
+        private bool _isOverlayHidden = false;
 
         public OverlayManager((int, int) iconDistribution, IconScheme iconScheme, Point startingPoint)
         {
@@ -75,10 +76,16 @@ namespace TLDROverlay.Overlay
 
         // public methods
         /// <summary>
-        /// Call this method to initialize the overlay and be able to call methods to alter it.
+        /// Call this method to initialize the overlay and be able to call methods to modify it.
         /// </summary>
         public void ShowOverlay()
         {
+            if (_isOverlayHidden)
+            {
+                UpdateOverlay(_overlayWindow.SetWindowSize, OverlayWindowSize);
+                _isOverlayHidden = true;
+                return;
+            }
             if (_isOverlayRunning) return;
             _isOverlayRunning = true;
             FormThread = new Thread(() =>
@@ -92,6 +99,7 @@ namespace TLDROverlay.Overlay
         public void HideOverlay()
         {
             if (!_isOverlayRunning) return;
+            _isOverlayHidden = true;
             UpdateOverlay(_overlayWindow.SetWindowSize, new Size(0, 0));
         }
 
@@ -100,11 +108,10 @@ namespace TLDROverlay.Overlay
             if (!_isOverlayRunning) return;
             UpdateOverlay(_overlayWindow.SetWindowSize, new Size(0, 0));
             ClearIcons();
-            _isOverlayRunning = false;
             UpdateOverlay(_overlayWindow.Close);
+            _isOverlayRunning = false;
             FormThread.Join();
         }
-
 
         public void AppendIcon(int key, string tooltip)
         {
@@ -117,7 +124,6 @@ namespace TLDROverlay.Overlay
             PictureBox picBox = CreatePictureBox(icon, iconPos, icon.Size);
             ActiveIconsList.Add(picBox);
             IconCount++;
-            // TODO: Change form size according to the IconCount
             UpdateOverlay(_overlayWindow.AddIconWithTooltip, picBox, tooltip);
             UpdateOverlay(_overlayWindow.SetWindowSize, OverlayWindowSize);
         }

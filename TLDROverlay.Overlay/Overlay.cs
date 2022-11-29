@@ -38,7 +38,7 @@ namespace TLDROverlay.Overlay
         {
             StartPosition = FormStartPosition.Manual;
             BackColor = Color.Wheat;
-            //TransparencyKey = Color.Wheat;
+            TransparencyKey = Color.Wheat;
             FormBorderStyle = FormBorderStyle.None;
             TopMost = true;
             ShowInTaskbar = false;
@@ -56,14 +56,18 @@ namespace TLDROverlay.Overlay
 
         public void AddIconWithTooltip(PictureBox picBox, string tooltip)
         {
-            Controls.Add(picBox);
-            ToolTip tt = new ToolTip();
-            tt.InitialDelay = 0;
-            tt.AutoPopDelay = 20000;
-            tt.ForeColor = Color.White;
-            tt.BackColor = Color.Navy;
-            tt.ShowAlways = true;
-            tt.SetToolTip(picBox, tooltip);
+            Color backgroundColor = Color.Navy;
+            Color foregroundColor = Color.White;
+
+            CreateTooltipIcon(picBox, tooltip, foregroundColor, backgroundColor);
+        }
+
+        public void AddIconWithTooltipWithColor(PictureBox picBox, string tooltip, Color? foregroundColor = null, Color? backgroundColor = null)
+        {
+            if (foregroundColor == null) foregroundColor = Color.White;
+            if (backgroundColor == null) backgroundColor = Color.Navy;
+            
+            CreateTooltipIcon(picBox, tooltip, (Color)foregroundColor, (Color)backgroundColor);
         }
         
         public void EnableClickThrough()
@@ -78,7 +82,6 @@ namespace TLDROverlay.Overlay
             SetWindowLong(Handle, GWL_EXSTYLE, initialStyle & ~(WS_EX_LAYERED | WS_EX_TRANSPARENT));
         }
 
-
         public void ShowOverlay()
         {
             Visible = true;
@@ -88,18 +91,38 @@ namespace TLDROverlay.Overlay
         {
             Hide();
         }
-
-        
-        private void PerformClick()
+        // private methods
+        private void CreateTooltipIcon(PictureBox picBox, string tooltip, Color foregroundColor, Color backgroundColor)
         {
-            uint X = (uint)Cursor.Position.X;
-            uint Y = (uint)Cursor.Position.Y;
-            mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
+            Controls.Add(picBox);
+            ToolTip tt = new ToolTip();
+            tt.InitialDelay = 0;
+            tt.AutoPopDelay = 20000;
+            tt.ForeColor = foregroundColor;
+            tt.BackColor = backgroundColor;
+            tt.ShowAlways = true;
+            tt.SetToolTip(picBox, tooltip);
         }
 
         private void Overlay_Shown(object sender, EventArgs e)
         {
             LoadedSignal.Release();
+        }
+
+        private void ToolTip_Draw(object sender, DrawToolTipEventArgs e)
+        {
+            using (var boldFont = new Font(e.Font, FontStyle.Bold))
+            {
+                var headerText = "Header: ";
+                var valueText = "Value";
+
+                var headerTextSize = TextRenderer.MeasureText(headerText, e.Font);
+
+                TextRenderer.DrawText(e.Graphics, headerText, e.Font, e.Bounds.Location, Color.Black);
+
+                var valueTextPosition = new Point(e.Bounds.X + headerTextSize.Width, e.Bounds.Y);
+                TextRenderer.DrawText(e.Graphics, valueText, boldFont, valueTextPosition, Color.Black);
+            }
         }
     }
 }
