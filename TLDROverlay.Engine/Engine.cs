@@ -12,7 +12,7 @@ using TLDROverlay.WindowHandler.Masterduel.Windows;
 using TLDROverlay.Api;
 using TLDROverlay.Ocr;
 
-namespace TLDROverlay
+namespace TLDROverlay.Engine
 {
     public abstract class Engine
     {

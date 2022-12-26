@@ -1,7 +1,7 @@
-﻿<Application x:Class="TLDR_Masterduel_Overlay.App"
+﻿<Application x:Class="TLDROverlay.Interface.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:TLDR_Masterduel_Overlay"
+             xmlns:local="clr-namespace:TLDROverlay.Interface"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

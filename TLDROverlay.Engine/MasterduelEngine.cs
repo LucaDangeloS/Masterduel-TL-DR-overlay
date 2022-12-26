@@ -13,7 +13,7 @@ using TLDROverlay.WindowHandler.Masterduel.Windows;
 using TLDROverlay.WindowHandler.Windows;
 using static TLDROverlay.Screen.ImageProcessing;
 
-namespace TLDROverlay
+namespace TLDROverlay.Engine
 {
     public class MasterduelEngine : Engine
     {

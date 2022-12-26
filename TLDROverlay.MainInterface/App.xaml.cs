@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace TLDR_Masterduel_Overlay
+namespace TLDROverlay.Interface
 {
     /// <summary>
     /// Interaction logic for App.xaml
