@@ -72,5 +72,9 @@ namespace TLDROverlay.Interface
             Debug.WriteLine("Clearing Persistent cache");
         }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

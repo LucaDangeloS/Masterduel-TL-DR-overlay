@@ -12,10 +12,11 @@
 
         <CheckBox x:Name="MemCacheCB"  Content="Disable Temporal Cache" Margin="10,55,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="15" Checked="ToggleMemoryCacheCheckBox" Unchecked="ToggleMemoryCacheCheckBox"/>
         <CheckBox x:Name="PersistentCacheCB"  Content="Disable Persistent Cache" Margin="10,84,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="15" Checked="TogglePersistentCacheCheckBox" Unchecked="TogglePersistentCacheCheckBox"/>
-        <Button x:Name="ClearMemCacheButton" Content="Clear Temporal Cache" Margin="0,53,10,0" HorizontalAlignment="Right" VerticalAlignment="Top" Click="ClearMemCache" Width="140"/>
-        <Button x:Name="ClearMemCacheButton_Copy" Content="Clear Persistent Cache" HorizontalAlignment="Right" Margin="0,82,10,0" VerticalAlignment="Top" Width="140" Click="ClearPersistentCache"/>
+        <Button x:Name="ClearMemCacheButton" Content="Clear Temporal Cache" Margin="0,53,10,0" HorizontalAlignment="Right" VerticalAlignment="Top" Width="140"/>
+        <Button x:Name="ClearBDCacheButton" Content="Clear Persistent Cache" HorizontalAlignment="Right" Margin="0,82,10,0" VerticalAlignment="Top" Width="140" Click="ClearPersistentCache"/>
 
         <CheckBox Name="ShowLogCB"  Content="Console Log" HorizontalAlignment="Left" Margin="10,119,0,0" VerticalAlignment="Top" Height="15" Checked="ToggleShowLogCheckBox" Unchecked="ToggleShowLogCheckBox"/>
         <TextBox Name="ConsoleLog" TextWrapping="Wrap" Margin="0,139,0,0" Visibility="Collapsed" MinHeight="130"/>
+        <Button x:Name="OpenCongig" Content="Open Configuration" Margin="0,117,10,0" VerticalAlignment="Top" Click="Button_Click" HorizontalAlignment="Right" Width="109"/>
     </Grid>
 </Window>
