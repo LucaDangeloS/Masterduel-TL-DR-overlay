@@ -11,6 +11,7 @@ using TLDROverlay.Masterduel;
 using TLDROverlay.WindowHandler.Masterduel.Windows;
 using TLDROverlay.Api;
 using TLDROverlay.Ocr;
+using System.Drawing;
 
 namespace TLDROverlay.Engine
 {
