@@ -2,6 +2,7 @@
 
 # TODOs
 - [X] UI module
+- [ ] Add searchers/milling tooltips
 - [ ] Integrate interface
 - [ ] Add features to interface (change properties)
 
