@@ -29,7 +29,7 @@ namespace TLDROverlay.WindowHandler
             public NoWindowFoundException() { }
 
             public NoWindowFoundException(string name)
-                : base(string.Format("Invalid Student Name: {0}", name))
+                : base(string.Format("No window found: {0}", name))
             {
 
             }
