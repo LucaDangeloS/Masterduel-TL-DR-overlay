@@ -16,6 +16,10 @@ namespace TLDROverlay.Caching
         private readonly string dir = "cache/";
         public readonly (int, int) SplashSize;
         private readonly SQLiteConnection Connection;
+        
+
+        // public attrs
+        public bool isInitialized { get; private set; } = false;
 
         // Public methods
         public LocalDB()
@@ -28,6 +32,7 @@ namespace TLDROverlay.Caching
         public void Initialize()
         {
             CreateTables();
+            isInitialized = true;
         }
 
         public void AddCard(CardInfo card)

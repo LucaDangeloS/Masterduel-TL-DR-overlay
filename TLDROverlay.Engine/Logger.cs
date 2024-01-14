@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,10 +11,12 @@ namespace TLDROverlay;
 
 public sealed class Logger
 {
-    public TextBox? ConsoleLog { get; set; }
     private bool LogToFile = false;
     private string LogFilePath = "log/log.txt";
     private static readonly Logger _logger = new ();
+    // array of log hooks
+    private List<Action<string>> _logHooks = new ();
+    public LogLevel _logLevel { get; set; }
 
     public static Logger GetLogger()
     {
@@ -24,19 +27,37 @@ public sealed class Logger
     {
     }
 
-    public void WriteToConsole(DateTime time, string message)
+    public void Log(string message, LogLevel logLevel = LogLevel.Debug)
     {
-        if (ConsoleLog != null)
+        if (logLevel < _logLevel)
         {
-            ConsoleLog.Text += $"[{time:HH:mm:ss}] {message} {Environment.NewLine}";
-            ConsoleLog.SelectionStart = ConsoleLog.Text.Length;
-            ConsoleLog.ScrollToCaret();
+            return;
+        }
+
+        // timestamp
+        message = DateTime.Now.ToString("HH:mm:ss") + " " + message;
+        // loglevel string
+        message = "[" + logLevel.ToString().ToUpper() + "] " + message;
+
+        if (LogToFile)
+        {
+            System.IO.File.AppendAllText(LogFilePath, message + "\n");
+        }
+        else
+        {
+            Debug.WriteLine(message);
+        }
+
+        // call hooks
+        foreach (var hook in _logHooks)
+        {
+            hook(message);
         }
     }
 
-    public void WriteToConsole(string message)
+    public void AddLogHook(Action<string> hook)
     {
-        WriteToConsole(DateTime.Now, message);
+        _logHooks.Add(hook);
     }
 }
 
