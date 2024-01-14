@@ -30,6 +30,7 @@ public static class CardText
     /// <returns>Returns the string with the cleaned up and trimmed card name.</returns>
     static public string TrimCardName(string name, Trim_aggressiveness aggressiveness)
     {
+        // DEBUG
         Debug.WriteLine("Card name: " + name);
         if (aggressiveness == Trim_aggressiveness.None) return name;
             
