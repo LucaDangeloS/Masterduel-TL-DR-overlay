@@ -8,9 +8,9 @@ It features an elaborate 2-layer cache system to avoid spamming API calls or dis
 
 # TODOs
 - [X] UI module
-- [ ] Add searchers/milling tooltips
-- [ ] Integrate interface
-- [ ] Add features to interface (change properties)
+- [X] Integrate interface
+- [ ] Add config window to interface
+- [ ] Integrate Overlay
 
 # Possible improvements
 - [ ] Take card type into account for internals (branch)
