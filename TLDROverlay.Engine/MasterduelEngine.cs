@@ -1,15 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Runtime.Caching;
-using System.Text;
-using System.Threading.Tasks;
 using TLDROverlay.Caching;
 using TLDROverlay.Config;
-using TLDROverlay.Exceptions;
 using TLDROverlay.Masterduel;
 using TLDROverlay.Ocr;
 using TLDROverlay.WindowHandler;
