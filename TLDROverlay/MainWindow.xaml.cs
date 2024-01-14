@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TesseractOCR;
+using TLDROverlay.Config;
 using TLDROverlay.Engine;
 
 namespace TLDROverlay
@@ -25,8 +26,8 @@ namespace TLDROverlay
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly MasterduelEngine _engine = new MasterduelEngine(0.9f);
         private readonly Logger _logger = Logger.GetLogger();
+        private readonly MasterduelEngine _engine;
         private readonly TextBox _consoleLogger;
 
         public MainWindow()
@@ -41,6 +42,8 @@ namespace TLDROverlay
                     _consoleLogger.ScrollToEnd();
                 });
             });
+            ConfigLoader.Instance.Initialize();
+            _engine = new MasterduelEngine(0.9f);
         }
 
         private void Start_click(object sender, RoutedEventArgs e)
@@ -112,24 +115,19 @@ namespace TLDROverlay
             }
         }
 
-        private void ClearMemCache(object sender, RoutedEventArgs e)
-        {
-            _logger.Log("Clearing Temporal cache");
-        }
-
-        private void ClearPersistentCache(object sender, RoutedEventArgs e)
-        {
-            _logger.Log("Clearing Persistent cache");
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Open_Config(object sender, RoutedEventArgs e)
         {
 
         }
 
         private void ClearMemCacheButton_Click(object sender, RoutedEventArgs e)
         {
+            _engine.ClearMemoryCaching();
+        }
 
+        private void ClearPersistentCacheButton_Click(object sender, RoutedEventArgs e)
+        {
+            _engine.ClearDBCaching();
         }
     }
 }

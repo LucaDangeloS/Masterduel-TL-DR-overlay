@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SQLite;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -9,19 +10,15 @@ namespace TLDROverlay.Config;
 public sealed class ConfigLoader
 {
     private readonly static ConfigLoader _instance = new();
-    private readonly Logger _logger = Logger.GetLogger();
     private readonly DefaultConfig _default = new();
     private NameValueCollection _config = new();
+    private Logger _logger = Logger.GetLogger();
     private readonly static string FloatFormat = "0.00";
-
+    private readonly static int maxLoggingLevel = 6;
+    private bool _initialized = false;
     private ConfigLoader()
     {
         _config = ConfigurationManager.AppSettings;
-
-        if (!ValidateConfiguration())
-        {
-            _config = _default.Serialize();
-        }
     }
 
     public static ConfigLoader Instance
@@ -32,19 +29,27 @@ public sealed class ConfigLoader
         }
     }
 
+    public void Initialize()
+    {
+        if (_initialized) return;
+        if (!ValidateConfiguration())
+        {
+            _config = _default.Serialize();
+        }
+        _initialized = true;
+    }
+
     // Getters
     public float GetFloatProperty(string propertyName)
     {
         string? prop = _config[propertyName];
-        if (prop == null) throw new ArgumentException($"The property '{propertyName}' does not exist.");
-        return float.Parse(prop);
+        return prop == null ? throw new ArgumentException($"The property '{propertyName}' does not exist.") : float.Parse(prop);
     }
 
     public int GetIntProperty(string propertyName)
     {
         string? prop = _config[propertyName];
-        if (prop == null) throw new ArgumentException($"The property '{propertyName}' does not exist.");
-        return int.Parse(prop);
+        return prop == null ? throw new ArgumentException($"The property '{propertyName}' does not exist.") : int.Parse(prop);
     }
 
     // Setters
@@ -80,6 +85,7 @@ public sealed class ConfigLoader
         private float D_COMPARISON_PRECISION { get; init; } = 0.98f;
         private int D_MAX_POSSIBLE_CARDS_FROM_API { get; init; } = 2;
         private int D_MAX_CACHE_ENTRIES { get; set; } = 40;
+        private int D_LOGGING_LEVEL { get; set; } = 2;
 
         public NameValueCollection Serialize()
         {
@@ -89,7 +95,8 @@ public sealed class ConfigLoader
                 { ConfigMappings.SPLASH_SIZE,                   D_SPLASH_SIZE.ToString() },
                 { ConfigMappings.COMPARISON_PRECISION,          D_COMPARISON_PRECISION.ToString(FloatFormat) },
                 { ConfigMappings.MAX_POSSIBLE_CARDS_FROM_API,   D_MAX_POSSIBLE_CARDS_FROM_API.ToString() },
-                { ConfigMappings.MAX_CACHE_ENTRIES,             D_MAX_CACHE_ENTRIES.ToString() }
+                { ConfigMappings.MAX_CACHE_ENTRIES,             D_MAX_CACHE_ENTRIES.ToString() },
+                { ConfigMappings.LOGGING_LEVEL,                 D_LOGGING_LEVEL.ToString() }
             };
         }
     }
@@ -103,10 +110,13 @@ public sealed class ConfigLoader
                 GetFloatProperty(ConfigMappings.COMPARISON_PRECISION) > 0.0f &&
                 GetFloatProperty(ConfigMappings.COMPARISON_PRECISION) <= 1.0 &&
                 GetIntProperty(ConfigMappings.MAX_POSSIBLE_CARDS_FROM_API) > 0 &&
-                GetIntProperty(ConfigMappings.MAX_CACHE_ENTRIES) > 0;
+                GetIntProperty(ConfigMappings.MAX_CACHE_ENTRIES) > 0 &&
+                GetIntProperty(ConfigMappings.LOGGING_LEVEL) >= 0 && 
+                GetIntProperty(ConfigMappings.LOGGING_LEVEL) <= maxLoggingLevel;
         }
         catch (ArgumentException e)
         {
+            _logger.Log(e.Message, LogLevel.Error);
             return false;
         }
     }

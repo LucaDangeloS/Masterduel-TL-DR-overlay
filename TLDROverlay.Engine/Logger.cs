@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static TLDROverlay.Config.ConfigLoader;
 
 namespace TLDROverlay;
 
@@ -16,7 +15,7 @@ public sealed class Logger
     private static readonly Logger _logger = new ();
     // array of log hooks
     private List<Action<string>> _logHooks = new ();
-    public LogLevel _logLevel { get; set; }
+    public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
     public static Logger GetLogger()
     {
@@ -27,9 +26,24 @@ public sealed class Logger
     {
     }
 
+    public void SetLoggingLevel(int logLevel)
+    {
+        LogLevel = logLevel switch
+        {
+            0 => LogLevel.Trace,
+            1 => LogLevel.Debug,
+            2 => LogLevel.Information,
+            3 => LogLevel.Warning,
+            4 => LogLevel.Error,
+            5 => LogLevel.Critical,
+            6 => LogLevel.None,
+            _ => LogLevel.Information,
+        };
+    }
+
     public void Log(string message, LogLevel logLevel = LogLevel.Debug)
     {
-        if (logLevel < _logLevel)
+        if (logLevel < LogLevel)
         {
             return;
         }

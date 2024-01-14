@@ -13,5 +13,6 @@ namespace TLDROverlay.Config
         public readonly static string MAX_CACHE_ENTRIES = "MaxCacheEntries";
         public readonly static string COMPARISON_PRECISION = "ComparisonPrecision";
         public readonly static string MAX_POSSIBLE_CARDS_FROM_API = "MaxPossibleResultsFromApi";
+        public readonly static string LOGGING_LEVEL = "LoggingLevel";
     }
 }

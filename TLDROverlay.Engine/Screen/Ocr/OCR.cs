@@ -13,6 +13,8 @@ internal class OCR
     // Public methods
     public OCR()
     {
+        // debug print current path
+        Debug.WriteLine(System.IO.Directory.GetCurrentDirectory());
         _engine_5 = new TesseractOCR.Engine(@"./tessdata", "MasterduelEng", TesseractOCR.Enums.EngineMode.Default);
         _engine_5.DefaultPageSegMode = TesseractOCR.Enums.PageSegMode.SingleLine;
     }

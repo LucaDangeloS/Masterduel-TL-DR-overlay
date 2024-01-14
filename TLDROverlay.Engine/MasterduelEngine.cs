@@ -123,6 +123,16 @@ namespace TLDROverlay.Engine
             _dbCaching = dbCaching;
         }
 
+        public void ClearMemoryCaching()
+        {
+            MemoryCache.ClearCache();
+        }
+
+        public void ClearDBCaching()
+        {
+            DBCache.ClearDataBase();
+        }
+
         // Internal methods
 
         public bool CheckIfInDuelScreen()
