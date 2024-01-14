@@ -1,4 +1,5 @@
-﻿using static TLDROverlay.Masterduel.CardInfo;
+﻿using System.Drawing;
+using static TLDROverlay.Masterduel.CardInfo;
 using static TLDROverlay.Screen.ImageProcessing;
 
 namespace TLDROverlay.Masterduel;
