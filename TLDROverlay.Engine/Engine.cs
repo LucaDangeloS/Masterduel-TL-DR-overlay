@@ -12,6 +12,7 @@ using TLDROverlay.WindowHandler.Masterduel.Windows;
 using TLDROverlay.Api;
 using TLDROverlay.Ocr;
 using System.Drawing;
+using Microsoft.Extensions.Logging;
 
 namespace TLDROverlay.Engine
 {
@@ -20,6 +21,7 @@ namespace TLDROverlay.Engine
         private readonly OCR ocr = new();
         public int MaxCardResultThreshold;
         public int SplashSizes;
+        protected readonly Logger _logger = Logger.GetLogger();
 
         public virtual bool CheckSplashCardTextValidity((Point, Point) splashRect, ImageHash hash)
         {
@@ -30,6 +32,16 @@ namespace TLDROverlay.Engine
             }
             bm2.Dispose();
             return true;
+        }
+
+        public virtual void StartLoop()
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void StopLoop()
+        {
+            throw new NotImplementedException();
         }
 
         public virtual async Task<CardInfo?> CheckCardName(Bitmap bm,
@@ -47,7 +59,7 @@ namespace TLDROverlay.Engine
 
             var reformattedCardName = TextProcessing.CardText.TrimCardName(result.Text, aggressiveness);
             // DEBUG
-            Debug.WriteLine($"Querying API with card name: '{reformattedCardName}' with {aggressiveness}");
+            _logger.Log($"Querying API with card name: '{reformattedCardName}' with {aggressiveness}", LogLevel.Trace);
             if (reformattedCardName == "") return null;
 
             // Fetch the API
@@ -61,7 +73,7 @@ namespace TLDROverlay.Engine
                 if (!CheckCardAmount(apiRes, MaxCardResultThreshold))
                 {
                     // INFO
-                    Debug.WriteLine($"Too many possible cards in the query \"{reformattedCardName}\"");
+                    _logger.Log($"Too many possible cards in the query \"{reformattedCardName}\" ({apiRes.Count})", LogLevel.Trace);
                     return null;
                 }
 
@@ -70,11 +82,11 @@ namespace TLDROverlay.Engine
             }
             catch (HttpRequestException excp)
             {
-                Debug.WriteLine(excp.Message);
+                _logger.Log(excp.Message, LogLevel.Trace);
             }
             catch (NoCardsFoundException excp)
             {
-                Debug.WriteLine(excp.Message);
+                _logger.Log(excp.Message, LogLevel.Trace);
             }
 
             return null;
@@ -96,7 +108,7 @@ namespace TLDROverlay.Engine
 
                 if (!CheckCardAmount(apiRes, 1))
                 {
-                    Debug.WriteLine($"Couldn't get card from description");
+                    _logger.Log($"Couldn't get card from description", LogLevel.Trace);
                     return null;
                 }
 
@@ -105,27 +117,20 @@ namespace TLDROverlay.Engine
             }
             catch (HttpRequestException excp)
             {
-                Debug.WriteLine(excp.Message);
+                _logger.Log(excp.Message, LogLevel.Trace);
             }
             catch (NoCardsFoundException excp)
             {
-                Debug.WriteLine(excp.Message);
+                _logger.Log(excp.Message, LogLevel.Trace);
             }
 
             return null;
         }
-
-        private bool CheckCardAmount(List<CardInfo> apiRes, int maxAmount)
-        {
-            if (apiRes.Count > maxAmount) return false;
-            return true;
-        }
-
         public virtual async Task<CardInfo?> FecthAPI((Point, Point) cardTitleRect, (Point, Point) cardSplashRect, ImageHash hash, (Point, Point)? cardDescRect = null)
         {
             (Point, Point) area;
             int splashSize = SplashSizes;
-            _ = new Bitmap(splashSize, splashSize);
+            //Bitmap bm = new(splashSize, splashSize);
             area = cardTitleRect;
             Bitmap bm = TakeScreenshotFromArea(area);
 
@@ -139,7 +144,8 @@ namespace TLDROverlay.Engine
             CardInfo? card;
             try
             {
-                card = await CheckCardName(bm, TextProcessing.CardText.Trim_aggressiveness.Light);
+                card = await CheckCardName(bm, TextProcessing.CardText.Trim_aggressiveness.None);
+                card ??= await CheckCardName(bm, TextProcessing.CardText.Trim_aggressiveness.Light);
                 card ??= await CheckCardName(bm, TextProcessing.CardText.Trim_aggressiveness.Moderate);
                 card ??= await CheckCardName(bm, TextProcessing.CardText.Trim_aggressiveness.Aggresive);
             }
@@ -162,5 +168,12 @@ namespace TLDROverlay.Engine
 
             return card;
         }
+
+        // Private methods
+        private bool CheckCardAmount(List<CardInfo> apiRes, int maxAmount)
+        {
+            return (apiRes.Count <= maxAmount);
+        }
+
     }
 }

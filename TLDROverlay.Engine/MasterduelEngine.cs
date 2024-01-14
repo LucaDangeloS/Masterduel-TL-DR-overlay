@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Text;
 using System.Threading.Tasks;
 using TLDROverlay.Caching;
@@ -10,9 +12,12 @@ using TLDROverlay.Config;
 using TLDROverlay.Exceptions;
 using TLDROverlay.Masterduel;
 using TLDROverlay.Ocr;
+using TLDROverlay.WindowHandler;
+using TLDROverlay.WindowHandler.Masterduel;
 using TLDROverlay.WindowHandler.Masterduel.Windows;
 using TLDROverlay.WindowHandler.Windows;
 using static TLDROverlay.Screen.ImageProcessing;
+using static TLDROverlay.WindowHandler.IWindowHandler;
 
 namespace TLDROverlay.Engine
 {
@@ -23,13 +28,19 @@ namespace TLDROverlay.Engine
         private readonly OCR ocr = new();
         private bool _dbCaching = true;
         private bool _memCaching = true;
-
+        private readonly AbstractMasterduelWindow MasterduelWindow = new MasterduelWindow();
         private MemCache MemoryCache;
         private LocalDB DBCache;
+        private IWindowHandler? handler;
+        
+        // debugging attributes
+        private bool _skipDuelScreenCheck = false;
+        private bool _skipCardInScreenCheck = false;
 
-        private static object SyncLock = new object();
+        // Public attributes
         public bool IsRunning { get; set; } = false;
         public float ComparisonsPrecision { get; }
+
 
         public MasterduelEngine(float comparisonsPrecision)
         {
@@ -38,13 +49,87 @@ namespace TLDROverlay.Engine
             DBCache = new();
             DBCache.Initialize();
             ComparisonsPrecision = comparisonsPrecision;
+            MaxCardResultThreshold = _config.GetIntProperty(ConfigMappings.MAX_POSSIBLE_CARDS_FROM_API);
         }
 
-        public bool CheckIfInDuelScreen((Point, Point) EnemyLp, (Point, Point) YourLp)
+        // Public running methods
+        override public void StartLoop()
+        {
+            try
+            {
+                handler = new Handler(MasterduelWindow.WindowName);
+            }
+            catch (NoWindowFoundException)
+            {
+                throw;
+            }
+
+            IsRunning = true;
+            // Get window coordinates
+            (Point, Point) windowArea;
+            try
+            {
+                windowArea = handler.GetWindowPoints();
+                MasterduelWindow.WindowArea = windowArea;
+            }
+            catch (Exception)
+            {
+                return;
+            }
+
+            new Thread(async () =>
+            {
+                while (IsRunning)
+                {
+                    if (handler.IsWindowCurrentlySelected())
+                    {
+                        await Run();
+                    }
+                    Thread.Sleep(300);
+                }
+            }).Start();
+        }
+
+        override public void StopLoop()
+        {
+            IsRunning = false;
+        }
+
+        private async Task Run()
+        {
+            var result = await CheckCardInScreen();
+            CardInfo? card = result.Item2;
+
+            if (result.Item1.Equals(CardSearchResullt.NO_MATCH))
+            {
+                return;
+            }
+
+            if (card != null && !card.Equals(lastCardSeen))
+            {
+                string logMes = (card.Effects.Count == 0 ? "" : Environment.NewLine) + String.Join(Environment.NewLine, card.Effects);
+                _logger.Log($"{card.Name}{logMes}", LogLevel.Information);
+                lastCardSeen = card;
+            }
+        }
+
+        public void SetMemoryCaching(bool memCaching)
+        {
+            _memCaching = memCaching;
+        }
+
+        public void SetDBCaching(bool dbCaching)
+        {
+            _dbCaching = dbCaching;
+        }
+
+        // Internal methods
+
+        public bool CheckIfInDuelScreen()
         {
             ImageAnalysis ocrRes;
             
-            var points = EnemyLp;
+            var points = MasterduelWindow.EnemyLPCoordinates;
             var bm = TakeScreenshotFromArea(points.Item1, points.Item2);
             ocrRes = ocr.ReadImage(bm);
 
@@ -55,7 +140,7 @@ namespace TLDROverlay.Engine
 
             if (!detectedLP)
             {
-                points = YourLp;
+                points = MasterduelWindow.YourLPCoordinates;
                 bm = TakeScreenshotFromArea(points.Item1, points.Item2);
                 ocrRes = ocr.ReadImage(bm);
                 bm.Dispose();
@@ -65,7 +150,7 @@ namespace TLDROverlay.Engine
             return detectedLP;
         }
 
-        public bool CheckIfCardInScreen((Point, Point) cardTypeRect)
+        public bool CheckIfCardInScreen()
         {
             ImageAnalysis ocrRes;
             string[] validTypes = { "effect", "spell", "trap", "link", "pendulum", "xyz", "synchro", "fusion", "ritual" };
@@ -82,7 +167,7 @@ namespace TLDROverlay.Engine
             bool detectedCard = false;
 
             // Get if card is in screen
-            var points = cardTypeRect;
+            var points = MasterduelWindow.CardTypeCoordinates;
             var bm = TakeScreenshotFromArea(points.Item1, points.Item2);
 
             ocrRes = ocr.ReadImage(bm);
@@ -99,21 +184,28 @@ namespace TLDROverlay.Engine
             NO_MATCH
         }
 
-        public async Task<(CardSearchResullt, CardInfo?)> CheckCardInScreen((Point, Point) cardSplashRect,
-            (Point, Point) cardTitleRect, (Point, Point) cardDescRect)
+        public async Task<(CardSearchResullt, CardInfo?)> CheckCardInScreen()
         {
             (Point, Point) area;
             Bitmap bm;
 
+            // Check if in duel screen
+            if (!_skipDuelScreenCheck && !CheckIfInDuelScreen())
+            {
+                // DEBUG
+                _logger.Log("Skipping card analysis", LogLevel.Trace);
+                return (CardSearchResullt.NO_MATCH, null);
+            }
+
             // Get splash area coords
-            area = cardSplashRect;
+            area = MasterduelWindow.CardSplashCoordinates;
 
             // Take screenshot of area
             bm = TakeScreenshotFromArea(area.Item1, area.Item2);
             var size = DBCache.SplashSize;
             var hash = new ImageHash(bm, size);
             bm.Dispose();
-            CardInfo? card = null;
+            CardInfo? card;
 
             // See if it's cached in memory
             if (_memCaching && MemoryCache.CheckInCache(hash))
@@ -122,7 +214,7 @@ namespace TLDROverlay.Engine
 
                 if (card != null)
                 {
-                    Debug.WriteLine("Got card cached from Memory");
+                    _logger.Log("Got card cached from Memory", LogLevel.Trace);
                     return (CardSearchResullt.MATCH, card);
                 }
                 else
@@ -138,7 +230,7 @@ namespace TLDROverlay.Engine
 
                 if (card != null)
                 {
-                    Debug.WriteLine("Got card cached Local DB");
+                    _logger.Log("Got card cached Local DB", LogLevel.Trace);
                     if (_memCaching)
                     {
                         MemoryCache.AddToCache(hash, card);
@@ -148,7 +240,13 @@ namespace TLDROverlay.Engine
             }
 
             // Ultimately, Fecth the API
-            card = await FecthAPI(cardTitleRect, cardSplashRect, hash, cardDescRect);
+            if (_skipCardInScreenCheck || !CheckIfCardInScreen())
+            {
+                return (CardSearchResullt.NO_MATCH, null);
+            }
+            
+            card = await FecthAPI(MasterduelWindow.CardTitleCoordinates, MasterduelWindow.CardSplashCoordinates, hash, MasterduelWindow.CardDescCoordinates);
+            _logger.Log(card?.ToString() ?? string.Empty);
             if (card == null) return (CardSearchResullt.NO_MATCH, null);
             if (card.CardNameIsChanged)
             {
@@ -157,19 +255,20 @@ namespace TLDROverlay.Engine
                     MemoryCache.AddToCache(hash, card);
                 }
                 return (CardSearchResullt.MATCH, card);
+                
             }
 
             if (_dbCaching)
             {
                 // DEBUG
-                Debug.WriteLine("Caching card into local DB: " + card.Name);
+                _logger.Log("Caching card into local DB: " + card.Name, LogLevel.Debug);
                 card.SetSplash(hash);
                 DBCache.AddCard(card);
             }
             if (_memCaching)
             {
                 // DEBUG
-                Debug.WriteLine("Caching card into Memory");
+                _logger.Log("Caching card into Memory", LogLevel.Debug);
                 MemoryCache.AddToCache(hash, card);
             }
 
