@@ -20,7 +20,6 @@ public sealed class ConfigLoader
 
         if (!ValidateConfiguration())
         {
-            _logger.WriteToConsole("Configuration file not valid, using default values.");
             _config = _default.Serialize();
         }
     }
