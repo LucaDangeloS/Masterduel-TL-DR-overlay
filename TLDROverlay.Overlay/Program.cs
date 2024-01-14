@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using System.Drawing;
 using TLDROverlay.Overlay.Icons;
+using Icon = TLDROverlay.Overlay.Icons.Icon;
 
 namespace TLDROverlay.Overlay
 {
@@ -14,19 +16,25 @@ namespace TLDROverlay.Overlay
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             IconScheme scheme = new IconScheme();
-            var distr = (1, 3);
-            Point start = new Point(0, 0);
+            // Make icon resolution scale with the Y axis space available.
+            scheme.AddIcon(1, new Icon("C:\\Users\\Lucad\\Desktop\\Cosas\\TLDR Masterduel Overlay\\TLDROverlay.Overlay\\Resources\\placeholder.png", new Size(32, 32)));
+            var distr = (2, 3);
+            Point startingPoint = new Point(176, 352);
 
             //ApplicationConfiguration.Initialize();
-            var overlay = new OverlayManager(distr, scheme, start);
-            Thread FormThread = new Thread(() =>
-            {
-                overlay.Initialize();
-            });
-            FormThread.Start();
+            var overlay = new OverlayManager(distr, scheme, startingPoint);
+            overlay.ShowOverlay();
+            overlay.AppendIcon(1, "test tooltip");
+            overlay.AppendIcon(1, "test tooltip 2");
+            overlay.AppendIcon(1, "test tooltip 3");
+            overlay.AppendIcon(1, "test tooltip 2");
+            overlay.AppendIcon(1, "test tooltip 3");
             Thread.Sleep(2000);
-            Debug.WriteLine("Changing point");
-            overlay.StartingPoint = new Point(600, 600);
+            overlay.HideOverlay();
+            Thread.Sleep(1000);
+            overlay.ShowOverlay();
+            Thread.Sleep(5000);
+            overlay.StopOverlay();
         }
     }
 }
